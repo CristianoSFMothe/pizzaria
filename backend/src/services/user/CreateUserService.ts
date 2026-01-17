@@ -1,3 +1,4 @@
+import { AppError } from "../../errors/AppError";
 import prismaClient from "../../prisma/index";
 import { hash } from "bcryptjs";
 
@@ -16,7 +17,7 @@ class CreateUserService {
     });
 
     if (userAlreadyExists) {
-      throw new Error("User already exists");
+      throw new AppError("E-mail já cadastrado", 409);
     }
 
     const passwordHash = await hash(password, 10);
