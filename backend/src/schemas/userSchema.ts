@@ -13,3 +13,14 @@ export const createUserSchema = z.object({
       .max(100, { message: "A senha deve ter no máximo 100 caracteres." }),
   }),
 });
+
+export const authUserSchema = z.object({
+  body: z.object({
+    email: z.email({ message: "Precisa ser um email válido." }).min(1, {
+      message: "O e-mail é obrigatório.",
+    }),
+    password: z.string({ message: "A senha é obrigatória." }).min(1, {
+      message: "A senha é obrigatória.",
+    }),
+  }),
+});

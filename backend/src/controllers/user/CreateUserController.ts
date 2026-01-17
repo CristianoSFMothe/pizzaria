@@ -13,7 +13,7 @@ class CreateUserController {
       password,
     });
 
-    res.json({ message: "Funcionando", user });
+    res.json(user);
   }
 }
 
