@@ -12,7 +12,7 @@ class AuthUserController {
       password,
     });
 
-    res.json(session);
+    res.status(200).json(session);
   }
 }
 
