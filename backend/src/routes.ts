@@ -7,6 +7,7 @@ import { DetailsUserController } from "./controllers/user/DetailsUserController"
 import { isAuthenticated } from "./middlewares/isAuthenticated";
 import { CreateCategoryController } from "./controllers/category/CreateCategoryController";
 import { isAdmin } from "./middlewares/isAdmin";
+import { createCategorySchema } from "./schemas/categorySchema";
 
 const router = Router();
 
@@ -28,6 +29,7 @@ router.post(
   "/category",
   isAuthenticated,
   isAdmin,
+  validateSchema(createCategorySchema),
   new CreateCategoryController().handle,
 );
 
