@@ -13,7 +13,11 @@ import { createCategorySchema } from "./schemas/categorySchema";
 import { ListCategoryController } from "./controllers/category/ListCategoryController";
 import { CreateProductController } from "./controllers/product/CreateProductController";
 import { ListProductController } from "./controllers/product/ListProductController";
-import { createProductSchema, listProductSchema } from "./schemas/productSchema";
+import {
+  createProductSchema,
+  listProductSchema,
+} from "./schemas/productSchema";
+import { DeleteProductController } from "./controllers/product/DeleteProductController";
 
 const router = Router();
 const upload = multer(uploadConfig);
@@ -56,6 +60,13 @@ router.get(
   isAuthenticated,
   validateSchema(listProductSchema),
   new ListProductController().handle,
+);
+
+router.delete(
+  "/product",
+  isAuthenticated,
+  isAdmin,
+  new DeleteProductController().handle,
 );
 
 export { router };
