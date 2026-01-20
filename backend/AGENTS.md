@@ -1,6 +1,7 @@
 # Documentacao de contexto do projeto - Sistema de Pizzaria (backend)
 
 ## Indice
+
 1. [Visao geral](#visao-geral)
 2. [Arquitetura](#arquitetura)
 3. [Tecnologias e versoes](#tecnologias-e-versoes)
@@ -18,6 +19,7 @@
 ---
 
 ## Visao geral
+
 - Backend em Node.js com TypeScript e Express 5.
 - Prisma ORM com PostgreSQL.
 - Validacao de entrada com Zod.
@@ -27,15 +29,18 @@
 ---
 
 ## Arquitetura
+
 Padrao: MVC + Service Layer (sem camada de view).
 
 Fluxo geral:
+
 ```text
 Requisicao HTTP -> Rotas -> Middlewares -> Controller -> Service -> Prisma -> Banco
                                          -> Controller -> Resposta HTTP
 ```
 
 Camadas:
+
 1. Rotas: definem endpoints e encadeiam middlewares.
 2. Middlewares: autenticacao, autorizacao e validacao.
 3. Controllers: extraem dados e delegam para services.
@@ -45,35 +50,42 @@ Camadas:
 ---
 
 ## Tecnologias e versoes
+
 ### Dependencias de runtime
-| Tecnologia | Versao | Uso |
-| --- | --- | --- |
-| express | ^5.1.0 | API HTTP |
-| cors | ^2.8.5 | CORS |
-| dotenv | ^17.2.3 | Variaveis de ambiente |
-| jsonwebtoken | ^9.0.3 | JWT |
-| bcryptjs | ^3.0.3 | Hash de senha |
-| zod | ^4.1.12 | Validacao |
-| @prisma/client | ^7.2.0 | ORM |
-| @prisma/adapter-pg | ^7.2.0 | Adapter Postgres |
-| pg | ^8.17.1 | Driver Postgres |
-| tsx | ^4.20.6 | Execucao TS |
+
+| Tecnologia         | Versao  | Uso                   |
+| ------------------ | ------- | --------------------- |
+| express            | ^5.1.0  | API HTTP              |
+| cors               | ^2.8.5  | CORS                  |
+| dotenv             | ^17.2.3 | Variaveis de ambiente |
+| jsonwebtoken       | ^9.0.3  | JWT                   |
+| bcryptjs           | ^3.0.3  | Hash de senha         |
+| cloudinary         | ^2.9.0  | Upload de imagens     |
+| zod                | ^4.1.12 | Validacao             |
+| @prisma/client     | ^7.2.0  | ORM                   |
+| @prisma/adapter-pg | ^7.2.0  | Adapter Postgres      |
+| multer             | ^2.0.2  | Upload multipart      |
+| pg                 | ^8.17.1 | Driver Postgres       |
+| tsx                | ^4.20.6 | Execucao TS           |
 
 ### Dependencias de desenvolvimento
-| Tecnologia | Versao | Uso |
-| --- | --- | --- |
-| typescript | ^5.9.3 | Tipagem e build |
-| prisma | ^7.2.0 | CLI Prisma |
-| nodemon | ^3.1.4 | Watcher |
-| @types/express | ^5.0.5 | Tipos Express |
-| @types/node | ^24.10.8 | Tipos Node |
-| @types/cors | ^2.8.17 | Tipos CORS |
-| @types/jsonwebtoken | ^9.0.10 | Tipos JWT |
-| @types/pg | ^8.16.0 | Tipos PG |
+
+| Tecnologia          | Versao   | Uso             |
+| ------------------- | -------- | --------------- |
+| typescript          | ^5.9.3   | Tipagem e build |
+| prisma              | ^7.2.0   | CLI Prisma      |
+| nodemon             | ^3.1.4   | Watcher         |
+| @types/express      | ^5.0.5   | Tipos Express   |
+| @types/node         | ^24.10.8 | Tipos Node      |
+| @types/cors         | ^2.8.17  | Tipos CORS      |
+| @types/jsonwebtoken | ^9.0.10  | Tipos JWT       |
+| @types/multer       | ^2.0.2   | Tipos Multer    |
+| @types/pg           | ^8.16.0  | Tipos PG        |
 
 ---
 
 ## Estrutura de pastas
+
 ```text
 backend/
 ├── prisma/
@@ -84,8 +96,15 @@ backend/
 │   └── schema.prisma
 ├── src/
 │   ├── @types/express/index.d.ts
+│   ├── config/
+│   │   ├── cloudinary.ts
+│   │   └── multer.ts
 │   ├── controllers/
-│   │   ├── category/CreateCategoryController.ts
+│   │   ├── category/
+│   │   │   ├── CreateCategoryController.ts
+│   │   │   └── ListCategoryController.ts
+│   │   ├── product/
+│   │   │   └── CreateProductController.ts
 │   │   └── user/
 │   │       ├── AuthUserController.ts
 │   │       ├── CreateUserController.ts
@@ -99,9 +118,14 @@ backend/
 │   ├── prisma/index.ts
 │   ├── schemas/
 │   │   ├── categorySchema.ts
+│   │   ├── productSchema.ts
 │   │   └── userSchema.ts
 │   ├── services/
-│   │   ├── category/CreateCategoryService.ts
+│   │   ├── category/
+│   │   │   ├── CreateCategoryService.ts
+│   │   │   └── ListCategoryService.ts
+│   │   ├── product/
+│   │   │   └── CreateProductService.ts
 │   │   └── user/
 │   │       ├── AuthUserService.ts
 │   │       ├── CreateUserService.ts
@@ -119,7 +143,9 @@ Observacao: `src/generated/prisma` e gerado via `prisma generate`.
 ---
 
 ## Modelagem do banco de dados
+
 ### Relacionamentos
+
 ```text
 User (1)
   role: STAFF | ADMIN
@@ -128,7 +154,9 @@ Category (1) --< Product (N) --< Item (N) >-- Order (1)
 ```
 
 ### Entidades e atributos
+
 **User** (`users`)
+
 - id: String (uuid, PK)
 - name: String
 - email: String (unique)
@@ -138,6 +166,7 @@ Category (1) --< Product (N) --< Item (N) >-- Order (1)
 - updatedAt: DateTime
 
 **Category** (`categories`)
+
 - id: String (uuid, PK)
 - name: String
 - createdAt: DateTime
@@ -145,6 +174,7 @@ Category (1) --< Product (N) --< Item (N) >-- Order (1)
 - products: Product[]
 
 **Product** (`products`)
+
 - id: String (uuid, PK)
 - name: String
 - price: Int
@@ -157,6 +187,7 @@ Category (1) --< Product (N) --< Item (N) >-- Order (1)
 - items: Item[]
 
 **Order** (`orders`)
+
 - id: String (uuid, PK)
 - table: Int
 - name: String (nullable)
@@ -167,6 +198,7 @@ Category (1) --< Product (N) --< Item (N) >-- Order (1)
 - items: Item[]
 
 **Item** (`items`)
+
 - id: String (uuid, PK)
 - amount: Int
 - orderId: String (FK -> orders.id, cascade)
@@ -175,6 +207,7 @@ Category (1) --< Product (N) --< Item (N) >-- Order (1)
 - updatedAt: DateTime
 
 ### Regras de delecao (cascade)
+
 - Category -> Products
 - Product -> Items
 - Order -> Items
@@ -182,36 +215,41 @@ Category (1) --< Product (N) --< Item (N) >-- Order (1)
 ---
 
 ## Middlewares
+
 ### isAuthenticated (`src/middlewares/isAuthenticated.ts`)
+
 - Le header `Authorization: Bearer <token>`.
 - Valida JWT com `JWT_SECRETE`.
 - Injeta `req.userId` com `sub` do token.
 - Retorna 401 em ausencia ou token invalido.
 
 ### isAdmin (`src/middlewares/isAdmin.ts`)
+
 - Requer `req.userId` (isAuthenticated antes).
 - Busca usuario no banco e verifica `role === "ADMIN"`.
 - Retorna 401 se nao autorizado.
 
 ### validateSchema (`src/middlewares/validateSchema.ts`)
+
 - Valida `body`, `query` e `params` com Zod.
 - Retorna 400 com lista de campos invalidos quando ha ZodError.
 - Retorna 500 para erros inesperados.
 
 Exemplo de resposta de validacao:
+
 ```json
 {
   "error": "Erro de validacao",
-  "details": [
-    { "field": "body.name", "message": "Mensagem de erro" }
-  ]
+  "details": [{ "field": "body.name", "message": "Mensagem de erro" }]
 }
 ```
 
 ---
 
 ## Validacao com schemas
+
 ### User (`src/schemas/userSchema.ts`)
+
 - createUserSchema
   - name: string, min 3, max 100
   - email: email valido
@@ -221,24 +259,38 @@ Exemplo de resposta de validacao:
   - password: string obrigatoria (min 1)
 
 ### Category (`src/schemas/categorySchema.ts`)
+
 - createCategorySchema
   - name: string, min 3
+
+### Product (`src/schemas/productSchema.ts`)
+
+- createProductSchema
+  - name: string obrigatoria
+  - price: string obrigatoria, apenas numeros
+  - description: string obrigatoria
+  - categoryId: string obrigatoria
 
 ---
 
 ## Endpoints
+
 Resumo:
 | Metodo | Rota | Middlewares | Descricao |
 | --- | --- | --- | --- |
 | POST | /users | validateSchema(createUserSchema) | Cria usuario |
 | POST | /session | validateSchema(authUserSchema) | Autentica usuario |
 | GET | /me | isAuthenticated | Detalhe do usuario |
+| GET | /category | isAuthenticated | Lista categorias |
 | POST | /category | isAuthenticated, isAdmin, validateSchema(createCategorySchema) | Cria categoria |
+| POST | /product | isAuthenticated, isAdmin, upload.single("file"), validateSchema(createProductSchema) | Cria produto |
 
 ### POST /users
+
 Middlewares: `validateSchema(createUserSchema)`
 
 Body:
+
 ```json
 {
   "name": "Joao Silva",
@@ -248,6 +300,7 @@ Body:
 ```
 
 Resposta (201):
+
 ```json
 {
   "id": "uuid",
@@ -259,9 +312,11 @@ Resposta (201):
 ```
 
 ### POST /session
+
 Middlewares: `validateSchema(authUserSchema)`
 
 Body:
+
 ```json
 {
   "email": "joao@example.com",
@@ -270,6 +325,7 @@ Body:
 ```
 
 Resposta (200):
+
 ```json
 {
   "id": "uuid",
@@ -281,14 +337,17 @@ Resposta (200):
 ```
 
 ### GET /me
+
 Middlewares: `isAuthenticated`
 
 Headers:
+
 ```text
 Authorization: Bearer <token>
 ```
 
 Resposta (200):
+
 ```json
 {
   "id": "uuid",
@@ -299,15 +358,40 @@ Resposta (200):
 }
 ```
 
+### GET /category
+
+Middlewares: `isAuthenticated`
+
+Headers:
+
+```text
+Authorization: Bearer <token>
+```
+
+Resposta (200):
+
+```json
+[
+  {
+    "id": "uuid",
+    "name": "Pizzas Doces",
+    "createdAt": "2025-01-01T00:00:00.000Z"
+  }
+]
+```
+
 ### POST /category
+
 Middlewares: `isAuthenticated`, `isAdmin`, `validateSchema(createCategorySchema)`
 
 Headers:
+
 ```text
 Authorization: Bearer <token>
 ```
 
 Body:
+
 ```json
 {
   "name": "Pizzas Doces"
@@ -315,6 +399,7 @@ Body:
 ```
 
 Resposta (201):
+
 ```json
 {
   "id": "uuid",
@@ -323,10 +408,47 @@ Resposta (201):
 }
 ```
 
+### POST /product
+
+Middlewares: `isAuthenticated`, `isAdmin`, `upload.single("file")`, `validateSchema(createProductSchema)`
+
+Headers:
+
+```text
+Authorization: Bearer <token>
+Content-Type: multipart/form-data
+```
+
+Body (multipart/form-data):
+
+```text
+name: Pizza Calabresa
+price: 35
+description: Pizza com calabresa e cebola
+categoryId: uuid
+file: (imagem jpg/png)
+```
+
+Resposta (201):
+
+```json
+{
+  "id": "uuid",
+  "name": "Pizza Calabresa",
+  "description": "Pizza com calabresa e cebola",
+  "price": 35,
+  "categoryId": "uuid",
+  "banner": "https://...",
+  "createdAt": "2025-01-01T00:00:00.000Z"
+}
+```
+
 ---
 
 ## Fluxo de requisicao
+
 ### Criacao de usuario
+
 1. POST /users.
 2. validateSchema(createUserSchema) valida dados.
 3. CreateUserController chama CreateUserService.
@@ -334,6 +456,7 @@ Resposta (201):
 5. Controller retorna 201 com dados sem senha.
 
 ### Criacao de categoria (admin)
+
 1. POST /category.
 2. isAuthenticated valida token e popula req.userId.
 3. isAdmin valida role ADMIN no banco.
@@ -341,15 +464,35 @@ Resposta (201):
 5. CreateCategoryService cria a categoria.
 6. Controller retorna 201.
 
+### Listagem de categorias
+
+1. GET /category.
+2. isAuthenticated valida token e popula req.userId.
+3. ListCategoryController chama ListCategoryService.
+4. Service lista categorias e retorna 200.
+
+### Criacao de produto (admin)
+
+1. POST /product.
+2. isAuthenticated valida token e popula req.userId.
+3. isAdmin valida role ADMIN no banco.
+4. upload.single("file") carrega imagem na memoria.
+5. validateSchema(createProductSchema) valida dados.
+6. CreateProductService valida categoria, envia imagem ao Cloudinary e cria produto.
+7. Controller retorna 201.
+
 ---
 
 ## Configuracoes do projeto
+
 ### package.json
+
 - type: commonjs
 - version: 1.0.0
 - script dev: `nodemon --watch 'src/**/*.ts' --exec 'tsx' src/server.ts`
 
 ### tsconfig.json (principais)
+
 - target: ES2020
 - module: commonjs
 - strict: true
@@ -359,19 +502,36 @@ Resposta (201):
 - removeComments: true
 
 ### Prisma
+
 **schema** (`prisma/schema.prisma`)
+
 - provider: postgresql
 - generator output: `src/generated/prisma`
 
 **config** (`prisma.config.ts`)
+
 - schema: `prisma/schema.prisma`
 - migrations: `prisma/migrations`
 - datasource url: `DATABASE_URL`
 
 **client** (`src/prisma/index.ts`)
+
 - usa `@prisma/adapter-pg` com `DATABASE_URL`
 
+### Upload e imagens
+
+**multer** (`src/config/multer.ts`)
+
+- storage: memoria (buffer)
+- limite: 4MB
+- tipos permitidos: jpg, jpeg, png
+
+**cloudinary** (`src/config/cloudinary.ts`)
+
+- usa `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
+
 ### Express server (`src/server.ts`)
+
 - middlewares globais: `express.json()`, `cors()`, `router`
 - handler de erro:
   - AppError -> statusCode e `{ "error": message }`
@@ -379,11 +539,13 @@ Resposta (201):
 - porta: `PORT` (default 3333)
 
 ### Tipos customizados
+
 - `src/@types/express/index.d.ts` adiciona `userId` ao `Request`.
 
 ---
 
 ## Seguranca
+
 - JWT com `sub = user.id` e expira em 30d.
 - Secret vem de `JWT_SECRETE`.
 - Payload do token inclui `name` e `email`.
@@ -394,6 +556,7 @@ Resposta (201):
 ---
 
 ## Observacoes importantes
+
 - IDs sao UUIDs (`uuid()` no Prisma).
 - `createdAt` e `updatedAt` sao gerenciados pelo Prisma.
 - O nome da variavel de ambiente do JWT no codigo e `JWT_SECRETE`.
@@ -402,11 +565,15 @@ Resposta (201):
 ---
 
 ## Como iniciar o projeto
+
 1. Instalar dependencias:
    - `npm install`
 2. Definir variaveis de ambiente:
    - `DATABASE_URL`
    - `JWT_SECRETE`
+   - `CLOUDINARY_CLOUD_NAME`
+   - `CLOUDINARY_API_KEY`
+   - `CLOUDINARY_API_SECRET`
    - `PORT` (opcional, default 3333)
 3. Gerar Prisma Client (se necessario):
    - `npx prisma generate`
