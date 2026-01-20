@@ -13,8 +13,10 @@ import { createCategorySchema } from "./schemas/categorySchema";
 import { ListCategoryController } from "./controllers/category/ListCategoryController";
 import { CreateProductController } from "./controllers/product/CreateProductController";
 import { ListProductController } from "./controllers/product/ListProductController";
+import { ListProductByCategoryController } from "./controllers/product/ListProductByCategoryController";
 import {
   createProductSchema,
+  listProductByCategorySchema,
   listProductSchema,
 } from "./schemas/productSchema";
 import { DeleteProductController } from "./controllers/product/DeleteProductController";
@@ -44,6 +46,13 @@ router.post(
   isAdmin,
   validateSchema(createCategorySchema),
   new CreateCategoryController().handle,
+);
+
+router.get(
+  "/category/product",
+  isAuthenticated,
+  validateSchema(listProductByCategorySchema),
+  new ListProductByCategoryController().handle,
 );
 
 router.post(
