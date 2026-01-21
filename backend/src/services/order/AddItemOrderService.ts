@@ -1,0 +1,66 @@
+import { AppError } from "../../errors/AppError";
+import prismaClient from "../../prisma/index";
+
+interface ItemProps {
+  orderId: string;
+  productId: string;
+  amount: number;
+}
+
+class AddItemOrderService {
+  async execute({ amount, orderId, productId }: ItemProps) {
+    try {
+      const orderExists = await prismaClient.order.findFirst({
+        where: {
+          id: orderId,
+        },
+      });
+
+      if (!orderExists) {
+        throw new Error("Order não encontrada");
+      }
+
+      const productExists = await prismaClient.product.findFirst({
+        where: {
+          id: productId,
+          disabled: false,
+        },
+      });
+
+      if (!productExists) {
+        throw new Error("Produto não encontrado");
+      }
+
+      const item = await prismaClient.item.create({
+        data: {
+          orderId: orderId,
+          productId: productId,
+          amount: amount,
+        },
+        select: {
+          id: true,
+          amount: true,
+          orderId: true,
+          productId: true,
+          createdAt: true,
+          product: {
+            select: {
+              id: true,
+              name: true,
+              price: true,
+              description: true,
+              banner: true,
+            },
+          },
+        },
+      });
+
+      return item;
+    } catch (err) {
+      console.log(err);
+      throw new AppError("Falha ao adicionar item no pedido", 500);
+    }
+  }
+}
+
+export { AddItemOrderService };
