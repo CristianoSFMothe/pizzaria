@@ -33,3 +33,11 @@ export const removeItemSchema = z.object({
       .min(1, "O ID do item e obrigatório"),
   }),
 });
+
+export const detailOrderSchema = z.object({
+  query: z.object({
+    orderId: z
+      .string({ message: "Order ID deve ser uma string" })
+      .min(1, "O orderId é obrigatório"),
+  }),
+});
