@@ -54,3 +54,9 @@ export const finishOrderSchema = z.object({
     orderId: z.string({ message: "ID do pedido precisa ser uma string" }),
   }),
 });
+
+export const deleteOrderSchema = z.object({
+  query: z.object({
+    orderId: z.string({ message: "ID do pedido precisa ser uma string" }),
+  }),
+});
