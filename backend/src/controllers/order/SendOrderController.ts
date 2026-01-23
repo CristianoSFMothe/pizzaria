@@ -8,7 +8,7 @@ class SendOrderController {
     const sendOrder = new SendOrderService();
     const order = await sendOrder.execute({ name: name, orderId: orderId });
 
-    res.json(order);
+    res.status(200).json(order);
   }
 }
 
