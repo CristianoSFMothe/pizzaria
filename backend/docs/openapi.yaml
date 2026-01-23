@@ -1,0 +1,920 @@
+openapi: 3.0.0
+info:
+  title: Sistema de Pizzaria API
+  version: 1.0.0
+  description: >-
+    API REST em Node.js/TypeScript para gestao de usuarios, categorias, produtos
+    e pedidos. Inclui autenticacao JWT, autorizacao por role e validacao de
+    entrada com Zod.
+  contact:
+    name: Cristiano da Silva Ferreira
+    url: https://github.com/CristianoSFMothe
+servers:
+  - url: http://localhost:3333
+    description: Local
+
+tags:
+  - name: Auth
+    description: Autenticacao e usuarios
+  - name: Category
+    description: Categorias
+  - name: Product
+    description: Produtos
+  - name: Order
+    description: Pedidos
+
+paths:
+  /users:
+    post:
+      tags: [Auth]
+      summary: Cria usuario
+      description: Cria um usuario com role STAFF por padrao.
+      operationId: createUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+      responses:
+        "201":
+          description: Usuario criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        "400":
+          $ref: '#/components/responses/ValidationError'
+        "409":
+          $ref: '#/components/responses/Conflict'
+        "500":
+          $ref: '#/components/responses/ServerError'
+
+  /session:
+    post:
+      tags: [Auth]
+      summary: Autentica usuario
+      operationId: authUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthRequest'
+      responses:
+        "200":
+          description: Usuario autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        "400":
+          $ref: '#/components/responses/ValidationError'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "500":
+          $ref: '#/components/responses/ServerError'
+
+  /me:
+    get:
+      tags: [Auth]
+      summary: Detalha o usuario autenticado
+      operationId: getMe
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Dados do usuario
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "500":
+          $ref: '#/components/responses/ServerError'
+
+  /category:
+    get:
+      tags: [Category]
+      summary: Lista categorias
+      operationId: listCategories
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Lista de categorias
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CategoryResponse'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "500":
+          $ref: '#/components/responses/ServerError'
+    post:
+      tags: [Category]
+      summary: Cria categoria
+      description: Requer usuario com role ADMIN.
+      operationId: createCategory
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCategoryRequest'
+      responses:
+        "201":
+          description: Categoria criada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryResponse'
+        "400":
+          $ref: '#/components/responses/ValidationError'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "500":
+          $ref: '#/components/responses/ServerError'
+
+  /category/product:
+    get:
+      tags: [Product]
+      summary: Lista produtos por categoria
+      operationId: listProductsByCategory
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/CategoryIdQuery'
+      responses:
+        "200":
+          description: Lista de produtos por categoria
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductListItem'
+        "400":
+          $ref: '#/components/responses/ValidationError'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "500":
+          $ref: '#/components/responses/ServerError'
+
+  /order:
+    post:
+      tags: [Order]
+      summary: Cria pedido
+      operationId: createOrder
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrderRequest'
+      responses:
+        "201":
+          description: Pedido criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderResponse'
+        "400":
+          $ref: '#/components/responses/ValidationError'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "500":
+          $ref: '#/components/responses/ServerError'
+    delete:
+      tags: [Order]
+      summary: Deleta pedido
+      operationId: deleteOrder
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/OrderIdQuery'
+      responses:
+        "200":
+          description: Pedido deletado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteResponse'
+        "400":
+          $ref: '#/components/responses/ValidationError'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "500":
+          $ref: '#/components/responses/ServerError'
+
+  /orders:
+    get:
+      tags: [Order]
+      summary: Lista pedidos
+      operationId: listOrders
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/DraftQuery'
+      responses:
+        "200":
+          description: Lista de pedidos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrderListItem'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "500":
+          $ref: '#/components/responses/ServerError'
+
+  /order/add:
+    post:
+      tags: [Order]
+      summary: Adiciona item ao pedido
+      operationId: addItem
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddItemRequest'
+      responses:
+        "201":
+          description: Item criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddItemResponse'
+        "400":
+          $ref: '#/components/responses/ValidationError'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "500":
+          $ref: '#/components/responses/ServerError'
+
+  /order/remove:
+    delete:
+      tags: [Order]
+      summary: Remove item do pedido
+      operationId: removeItem
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ItemIdQuery'
+      responses:
+        "200":
+          description: Item removido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteResponse'
+        "400":
+          $ref: '#/components/responses/ValidationError'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "500":
+          $ref: '#/components/responses/ServerError'
+
+  /order/detail:
+    get:
+      tags: [Order]
+      summary: Detalha pedido
+      operationId: detailOrder
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/OrderIdQuery'
+      responses:
+        "200":
+          description: Detalhes do pedido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderDetailResponse'
+        "400":
+          $ref: '#/components/responses/ValidationError'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "500":
+          $ref: '#/components/responses/ServerError'
+
+  /order/send:
+    put:
+      tags: [Order]
+      summary: Envia pedido
+      description: Atualiza draft para false e define o nome do pedido.
+      operationId: sendOrder
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendOrderRequest'
+      responses:
+        "200":
+          description: Pedido enviado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderResponse'
+        "400":
+          $ref: '#/components/responses/ValidationError'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "500":
+          $ref: '#/components/responses/ServerError'
+
+  /order/finish:
+    put:
+      tags: [Order]
+      summary: Finaliza pedido
+      description: Atualiza draft para true.
+      operationId: finishOrder
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FinishOrderRequest'
+      responses:
+        "200":
+          description: Pedido finalizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderResponse'
+        "400":
+          $ref: '#/components/responses/ValidationError'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "500":
+          $ref: '#/components/responses/ServerError'
+
+  /product:
+    post:
+      tags: [Product]
+      summary: Cria produto
+      description: Requer usuario com role ADMIN. Envia imagem via multipart.
+      operationId: createProduct
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - name
+                - price
+                - description
+                - categoryId
+                - file
+              properties:
+                name:
+                  type: string
+                price:
+                  type: string
+                  description: Apenas numeros
+                description:
+                  type: string
+                categoryId:
+                  type: string
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "201":
+          description: Produto criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductCreateResponse'
+        "400":
+          $ref: '#/components/responses/ValidationError'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "500":
+          $ref: '#/components/responses/ServerError'
+    get:
+      tags: [Product]
+      summary: Lista produtos
+      operationId: listProducts
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/DisabledQuery'
+      responses:
+        "200":
+          description: Lista de produtos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductListItem'
+        "400":
+          $ref: '#/components/responses/ValidationError'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "500":
+          $ref: '#/components/responses/ServerError'
+    delete:
+      tags: [Product]
+      summary: Desativa produto
+      description: Requer usuario com role ADMIN.
+      operationId: deleteProduct
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ProductIdQuery'
+      responses:
+        "200":
+          description: Produto desativado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteResponse'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "500":
+          $ref: '#/components/responses/ServerError'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    CategoryIdQuery:
+      in: query
+      name: categoryId
+      required: true
+      description: ID da categoria
+      schema:
+        type: string
+    OrderIdQuery:
+      in: query
+      name: orderId
+      required: true
+      description: ID do pedido
+      schema:
+        type: string
+    ItemIdQuery:
+      in: query
+      name: itemId
+      required: true
+      description: ID do item do pedido
+      schema:
+        type: string
+    ProductIdQuery:
+      in: query
+      name: productId
+      required: true
+      description: ID do produto
+      schema:
+        type: string
+    DraftQuery:
+      in: query
+      name: draft
+      required: false
+      description: Filtra pedidos por status de rascunho
+      schema:
+        type: string
+        enum: ["true", "false"]
+    DisabledQuery:
+      in: query
+      name: disabled
+      required: false
+      description: Filtra produtos desativados
+      schema:
+        type: string
+        enum: ["true", "false"]
+
+  responses:
+    ValidationError:
+      description: Erro de validacao
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationErrorResponse'
+    Unauthorized:
+      description: Nao autorizado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Recurso nao encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Conflict:
+      description: Conflito de dados
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    ServerError:
+      description: Erro interno do servidor
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ServerErrorResponse'
+
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Mensagem de erro
+    InternalServerError:
+      type: object
+      properties:
+        status:
+          type: string
+          example: error
+        message:
+          type: string
+          example: Internal server error
+    ServerErrorResponse:
+      oneOf:
+        - $ref: '#/components/schemas/ErrorResponse'
+        - $ref: '#/components/schemas/InternalServerError'
+
+    ValidationErrorItem:
+      type: object
+      properties:
+        field:
+          type: string
+          example: body.email
+        message:
+          type: string
+          example: Email invalido
+    ValidationErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Erro de validacao
+        details:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationErrorItem'
+
+    CreateUserRequest:
+      type: object
+      required: [name, email, password]
+      properties:
+        name:
+          type: string
+          example: Joao Silva
+        email:
+          type: string
+          example: joao@example.com
+        password:
+          type: string
+          example: senha123
+
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          example: uuid
+        name:
+          type: string
+          example: Joao Silva
+        email:
+          type: string
+          example: joao@example.com
+        role:
+          type: string
+          enum: [STAFF, ADMIN]
+        createdAt:
+          type: string
+          format: date-time
+
+    AuthRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          example: joao@example.com
+        password:
+          type: string
+          example: senha123
+
+    AuthResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          example: uuid
+        name:
+          type: string
+          example: Joao Silva
+        email:
+          type: string
+          example: joao@example.com
+        role:
+          type: string
+          enum: [STAFF, ADMIN]
+        token:
+          type: string
+          example: jwt
+
+    CreateCategoryRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          example: Pizzas Doces
+
+    CategoryResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          example: uuid
+        name:
+          type: string
+          example: Pizzas Doces
+        createdAt:
+          type: string
+          format: date-time
+
+    ProductCreateResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          example: uuid
+        name:
+          type: string
+          example: Pizza Calabresa
+        description:
+          type: string
+          example: Pizza com calabresa e cebola
+        price:
+          type: integer
+          example: 35
+        categoryId:
+          type: string
+          example: uuid
+        banner:
+          type: string
+          example: https://...
+        createdAt:
+          type: string
+          format: date-time
+
+    ProductListItem:
+      allOf:
+        - $ref: '#/components/schemas/ProductCreateResponse'
+        - type: object
+          properties:
+            disabled:
+              type: boolean
+              example: false
+            category:
+              type: object
+              properties:
+                id:
+                  type: string
+                  example: uuid
+                name:
+                  type: string
+                  example: Pizzas Salgadas
+
+    CreateOrderRequest:
+      type: object
+      required: [table]
+      properties:
+        table:
+          type: integer
+          example: 12
+        name:
+          type: string
+          example: Mesa 12
+
+    OrderResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          example: uuid
+        table:
+          type: integer
+          example: 12
+        name:
+          type: string
+          example: Mesa 12
+        status:
+          type: boolean
+          example: false
+        draft:
+          type: boolean
+          example: true
+        createdAt:
+          type: string
+          format: date-time
+
+    OrderItemProduct:
+      type: object
+      properties:
+        id:
+          type: string
+          example: uuid
+        name:
+          type: string
+          example: Pizza Calabresa
+        price:
+          type: integer
+          example: 35
+        description:
+          type: string
+          example: Pizza com calabresa e cebola
+        banner:
+          type: string
+          example: https://...
+
+    OrderItem:
+      type: object
+      properties:
+        id:
+          type: string
+          example: uuid
+        amount:
+          type: integer
+          example: 2
+        createdAt:
+          type: string
+          format: date-time
+        product:
+          $ref: '#/components/schemas/OrderItemProduct'
+
+    OrderListItem:
+      type: object
+      properties:
+        id:
+          type: string
+          example: uuid
+        table:
+          type: integer
+          example: 12
+        name:
+          type: string
+          example: Mesa 12
+        status:
+          type: boolean
+          example: false
+        draft:
+          type: boolean
+          example: true
+        createdAt:
+          type: string
+          format: date-time
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                example: uuid
+              amount:
+                type: integer
+                example: 2
+              product:
+                $ref: '#/components/schemas/OrderItemProduct'
+
+    OrderDetailResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          example: uuid
+        table:
+          type: integer
+          example: 12
+        name:
+          type: string
+          example: Mesa 12
+        draft:
+          type: boolean
+          example: true
+        status:
+          type: boolean
+          example: false
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItem'
+
+    AddItemRequest:
+      type: object
+      required: [orderId, productId, amount]
+      properties:
+        orderId:
+          type: string
+          example: uuid
+        productId:
+          type: string
+          example: uuid
+        amount:
+          type: integer
+          example: 2
+
+    AddItemResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          example: uuid
+        amount:
+          type: integer
+          example: 2
+        orderId:
+          type: string
+          example: uuid
+        productId:
+          type: string
+          example: uuid
+        createdAt:
+          type: string
+          format: date-time
+        product:
+          $ref: '#/components/schemas/OrderItemProduct'
+
+    SendOrderRequest:
+      type: object
+      required: [orderId, name]
+      properties:
+        orderId:
+          type: string
+          example: uuid
+        name:
+          type: string
+          example: Mesa 12
+
+    FinishOrderRequest:
+      type: object
+      required: [orderId]
+      properties:
+        orderId:
+          type: string
+          example: uuid
+
+    DeleteResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Operacao realizada com sucesso

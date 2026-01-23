@@ -68,6 +68,12 @@ npm install
 npm run dev
 ```
 
+## Documentacao da API (Swagger)
+
+- Swagger UI: http://localhost:3333/docs
+- OpenAPI JSON: http://localhost:3333/docs.json
+- Arquivo fonte: docs/openapi.yaml
+
 ## Como clonar o projeto e colaborar
 
 1. Faca um fork do repositorio.
