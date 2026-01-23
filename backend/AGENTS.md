@@ -103,8 +103,20 @@ backend/
 │   │   ├── category/
 │   │   │   ├── CreateCategoryController.ts
 │   │   │   └── ListCategoryController.ts
+│   │   ├── order/
+│   │   │   ├── AddItemOrderController.ts
+│   │   │   ├── CreateOrderController.ts
+│   │   │   ├── DeleteOrderController.ts
+│   │   │   ├── DetailOrderController.ts
+│   │   │   ├── FinishOrderController.ts
+│   │   │   ├── ListOrdersController.ts
+│   │   │   ├── RemoveItemOrderController.ts
+│   │   │   └── SendOrderController.ts
 │   │   ├── product/
-│   │   │   └── CreateProductController.ts
+│   │   │   ├── CreateProductController.ts
+│   │   │   ├── DeleteProductController.ts
+│   │   │   ├── ListProductByCategoryController.ts
+│   │   │   └── ListProductController.ts
 │   │   └── user/
 │   │       ├── AuthUserController.ts
 │   │       ├── CreateUserController.ts
@@ -118,14 +130,27 @@ backend/
 │   ├── prisma/index.ts
 │   ├── schemas/
 │   │   ├── categorySchema.ts
+│   │   ├── orderSchema.ts
 │   │   ├── productSchema.ts
 │   │   └── userSchema.ts
 │   ├── services/
 │   │   ├── category/
 │   │   │   ├── CreateCategoryService.ts
 │   │   │   └── ListCategoryService.ts
+│   │   ├── order/
+│   │   │   ├── AddItemOrderService.ts
+│   │   │   ├── CreateOrderService.ts
+│   │   │   ├── DeleteOrderService.ts
+│   │   │   ├── DetailOrderService.ts
+│   │   │   ├── FinishOrderService.ts
+│   │   │   ├── ListOrdersService.ts
+│   │   │   ├── RemoveItemOrderService.ts
+│   │   │   └── SendOrderService.ts
 │   │   ├── product/
-│   │   │   └── CreateProductService.ts
+│   │   │   ├── CreateProductService.ts
+│   │   │   ├── DeleteProductService.ts
+│   │   │   ├── ListProductByCategoryService.ts
+│   │   │   └── ListProductService.ts
 │   │   └── user/
 │   │       ├── AuthUserService.ts
 │   │       ├── CreateUserService.ts
@@ -270,6 +295,31 @@ Exemplo de resposta de validacao:
   - price: string obrigatoria, apenas numeros
   - description: string obrigatoria
   - categoryId: string obrigatoria
+- listProductSchema
+  - disabled: string opcional ("true" ou "false")
+- listProductByCategorySchema
+  - categoryId: string obrigatoria (query)
+
+### Order (`src/schemas/orderSchema.ts`)
+
+- createOrderSchema
+  - table: number inteiro positivo
+  - name: string opcional
+- addItemSchema
+  - orderId: string obrigatoria
+  - productId: string obrigatoria
+  - amount: number inteiro positivo
+- removeItemSchema
+  - itemId: string obrigatoria (query)
+- detailOrderSchema
+  - orderId: string obrigatoria (query)
+- sendOrderSchema
+  - orderId: string obrigatoria
+  - name: string obrigatoria
+- finishOrderSchema
+  - orderId: string obrigatoria
+- deleteOrderSchema
+  - orderId: string obrigatoria (query)
 
 ---
 
@@ -283,7 +333,18 @@ Resumo:
 | GET | /me | isAuthenticated | Detalhe do usuario |
 | GET | /category | isAuthenticated | Lista categorias |
 | POST | /category | isAuthenticated, isAdmin, validateSchema(createCategorySchema) | Cria categoria |
+| GET | /category/product | isAuthenticated, validateSchema(listProductByCategorySchema) | Lista produtos por categoria |
+| POST | /order | isAuthenticated, validateSchema(createOrderSchema) | Cria pedido |
+| GET | /orders | isAuthenticated | Lista pedidos (filtra por draft) |
+| POST | /order/add | isAuthenticated, validateSchema(addItemSchema) | Adiciona item ao pedido |
+| DELETE | /order/remove | isAuthenticated, validateSchema(removeItemSchema) | Remove item do pedido |
+| GET | /order/detail | isAuthenticated, validateSchema(detailOrderSchema) | Detalha pedido |
+| PUT | /order/send | isAuthenticated, validateSchema(sendOrderSchema) | Envia pedido (draft=false) |
+| PUT | /order/finish | isAuthenticated, validateSchema(finishOrderSchema) | Finaliza pedido |
+| DELETE | /order | isAuthenticated, validateSchema(deleteOrderSchema) | Deleta pedido |
 | POST | /product | isAuthenticated, isAdmin, upload.single("file"), validateSchema(createProductSchema) | Cria produto |
+| GET | /product | isAuthenticated, validateSchema(listProductSchema) | Lista produtos |
+| DELETE | /product | isAuthenticated, isAdmin | Desativa produto |
 
 ### POST /users
 
@@ -408,6 +469,259 @@ Resposta (201):
 }
 ```
 
+### GET /category/product
+
+Middlewares: `isAuthenticated`, `validateSchema(listProductByCategorySchema)`
+
+Query:
+
+```text
+categoryId=uuid
+```
+
+Resposta (200):
+
+```json
+[
+  {
+    "id": "uuid",
+    "name": "Pizza Calabresa",
+    "description": "Pizza com calabresa e cebola",
+    "price": 35,
+    "categoryId": "uuid",
+    "banner": "https://...",
+    "disabled": false,
+    "createdAt": "2025-01-01T00:00:00.000Z",
+    "category": {
+      "id": "uuid",
+      "name": "Pizzas Salgadas"
+    }
+  }
+]
+```
+
+### POST /order
+
+Middlewares: `isAuthenticated`, `validateSchema(createOrderSchema)`
+
+Body:
+
+```json
+{
+  "table": 12,
+  "name": "Mesa 12"
+}
+```
+
+Resposta (201):
+
+```json
+{
+  "id": "uuid",
+  "table": 12,
+  "name": "Mesa 12",
+  "status": false,
+  "draft": true,
+  "createdAt": "2025-01-01T00:00:00.000Z"
+}
+```
+
+### GET /orders
+
+Middlewares: `isAuthenticated`
+
+Query (opcional):
+
+```text
+draft=true
+```
+
+Resposta (200):
+
+```json
+[
+  {
+    "id": "uuid",
+    "table": 12,
+    "name": "Mesa 12",
+    "status": false,
+    "draft": true,
+    "createdAt": "2025-01-01T00:00:00.000Z",
+    "items": [
+      {
+        "id": "uuid",
+        "amount": 2,
+        "product": {
+          "id": "uuid",
+          "name": "Pizza Calabresa",
+          "price": 35,
+          "description": "Pizza com calabresa e cebola",
+          "banner": "https://..."
+        }
+      }
+    ]
+  }
+]
+```
+
+### POST /order/add
+
+Middlewares: `isAuthenticated`, `validateSchema(addItemSchema)`
+
+Body:
+
+```json
+{
+  "orderId": "uuid",
+  "productId": "uuid",
+  "amount": 2
+}
+```
+
+Resposta (201):
+
+```json
+{
+  "id": "uuid",
+  "amount": 2,
+  "orderId": "uuid",
+  "productId": "uuid",
+  "createdAt": "2025-01-01T00:00:00.000Z",
+  "product": {
+    "id": "uuid",
+    "name": "Pizza Calabresa",
+    "price": 35,
+    "description": "Pizza com calabresa e cebola",
+    "banner": "https://..."
+  }
+}
+```
+
+### DELETE /order/remove
+
+Middlewares: `isAuthenticated`, `validateSchema(removeItemSchema)`
+
+Query:
+
+```text
+itemId=uuid
+```
+
+Resposta (200):
+
+```json
+{
+  "message": "Item removido com sucesso"
+}
+```
+
+### GET /order/detail
+
+Middlewares: `isAuthenticated`, `validateSchema(detailOrderSchema)`
+
+Query:
+
+```text
+orderId=uuid
+```
+
+Resposta (200):
+
+```json
+{
+  "id": "uuid",
+  "table": 12,
+  "name": "Mesa 12",
+  "draft": true,
+  "status": false,
+  "createdAt": "2025-01-01T00:00:00.000Z",
+  "updatedAt": "2025-01-01T00:00:00.000Z",
+  "items": [
+    {
+      "id": "uuid",
+      "amount": 2,
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "product": {
+        "id": "uuid",
+        "name": "Pizza Calabresa",
+        "price": 35,
+        "description": "Pizza com calabresa e cebola",
+        "banner": "https://..."
+      }
+    }
+  ]
+}
+```
+
+### PUT /order/send
+
+Middlewares: `isAuthenticated`, `validateSchema(sendOrderSchema)`
+
+Body:
+
+```json
+{
+  "orderId": "uuid",
+  "name": "Mesa 12"
+}
+```
+
+Resposta (200):
+
+```json
+{
+  "id": "uuid",
+  "table": 12,
+  "name": "Mesa 12",
+  "draft": false,
+  "status": false,
+  "createdAt": "2025-01-01T00:00:00.000Z"
+}
+```
+
+### PUT /order/finish
+
+Middlewares: `isAuthenticated`, `validateSchema(finishOrderSchema)`
+
+Body:
+
+```json
+{
+  "orderId": "uuid"
+}
+```
+
+Resposta (200):
+
+```json
+{
+  "id": "uuid",
+  "table": 12,
+  "name": "Mesa 12",
+  "draft": true,
+  "status": false,
+  "createdAt": "2025-01-01T00:00:00.000Z"
+}
+```
+
+### DELETE /order
+
+Middlewares: `isAuthenticated`, `validateSchema(deleteOrderSchema)`
+
+Query:
+
+```text
+orderId=uuid
+```
+
+Resposta (200):
+
+```json
+{
+  "message": "Pedido deletado com sucesso!"
+}
+```
+
 ### POST /product
 
 Middlewares: `isAuthenticated`, `isAdmin`, `upload.single("file")`, `validateSchema(createProductSchema)`
@@ -440,6 +754,55 @@ Resposta (201):
   "categoryId": "uuid",
   "banner": "https://...",
   "createdAt": "2025-01-01T00:00:00.000Z"
+}
+```
+
+### GET /product
+
+Middlewares: `isAuthenticated`, `validateSchema(listProductSchema)`
+
+Query (opcional):
+
+```text
+disabled=true
+```
+
+Resposta (200):
+
+```json
+[
+  {
+    "id": "uuid",
+    "name": "Pizza Calabresa",
+    "description": "Pizza com calabresa e cebola",
+    "price": 35,
+    "categoryId": "uuid",
+    "banner": "https://...",
+    "disabled": false,
+    "createdAt": "2025-01-01T00:00:00.000Z",
+    "category": {
+      "id": "uuid",
+      "name": "Pizzas Salgadas"
+    }
+  }
+]
+```
+
+### DELETE /product
+
+Middlewares: `isAuthenticated`, `isAdmin`
+
+Query:
+
+```text
+productId=uuid
+```
+
+Resposta (200):
+
+```json
+{
+  "message": "Produto deletado com sucesso"
 }
 ```
 
@@ -480,6 +843,71 @@ Resposta (201):
 5. validateSchema(createProductSchema) valida dados.
 6. CreateProductService valida categoria, envia imagem ao Cloudinary e cria produto.
 7. Controller retorna 201.
+
+### Criacao de pedido
+
+1. POST /order.
+2. isAuthenticated valida token e popula req.userId.
+3. validateSchema(createOrderSchema) valida dados.
+4. CreateOrderController chama CreateOrderService.
+5. Service cria o pedido.
+6. Controller retorna 201.
+
+### Adicao de item no pedido
+
+1. POST /order/add.
+2. isAuthenticated valida token e popula req.userId.
+3. validateSchema(addItemSchema) valida dados.
+4. AddItemOrderService valida pedido e produto.
+5. Service cria o item.
+6. Controller retorna 201.
+
+### Detalhe de pedido
+
+1. GET /order/detail?orderId=uuid.
+2. isAuthenticated valida token e popula req.userId.
+3. validateSchema(detailOrderSchema) valida dados.
+4. DetailOrderService busca pedido com itens e produtos.
+5. Controller retorna 200.
+
+### Envio de pedido
+
+1. PUT /order/send.
+2. isAuthenticated valida token e popula req.userId.
+3. validateSchema(sendOrderSchema) valida dados.
+4. SendOrderService atualiza draft para false e nome do pedido.
+5. Controller retorna 200.
+
+### Finalizacao de pedido
+
+1. PUT /order/finish.
+2. isAuthenticated valida token e popula req.userId.
+3. validateSchema(finishOrderSchema) valida dados.
+4. FinishOrderService atualiza draft para true.
+5. Controller retorna 200.
+
+### Remocao de item do pedido
+
+1. DELETE /order/remove?itemId=uuid.
+2. isAuthenticated valida token e popula req.userId.
+3. validateSchema(removeItemSchema) valida dados.
+4. RemoveItemOrderService verifica item e remove.
+5. Controller retorna 200.
+
+### Exclusao de pedido
+
+1. DELETE /order?orderId=uuid.
+2. isAuthenticated valida token e popula req.userId.
+3. validateSchema(deleteOrderSchema) valida dados.
+4. DeleteOrderService verifica pedido e remove.
+5. Controller retorna 200.
+
+### Listagem de pedidos
+
+1. GET /orders?draft=true.
+2. isAuthenticated valida token e popula req.userId.
+3. ListOrdersService lista pedidos e itens.
+4. Controller retorna 200.
 
 ---
 
