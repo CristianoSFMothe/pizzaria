@@ -11,11 +11,19 @@ import {
 } from "../ui/card";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 import { registerAction } from "@/app/actions/auth";
+import { useRouter } from "next/navigation";
 
 export const RegisterForm = () => {
+  const router = useRouter();
   const [state, formAction, isPending] = useActionState(registerAction, null);
+
+  useEffect(() => {
+    if (state?.success && state?.redirectTo) {
+      router.replace(state.redirectTo);
+    }
+  }, [state, router]);
 
   return (
     <Card className="bg-app-card border-app-border mx-auto w-full max-w-md border">
