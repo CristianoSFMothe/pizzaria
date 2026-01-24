@@ -1,6 +1,7 @@
 "use server";
 
 import { apiClient } from "@/lib/api";
+import { User } from "@/lib/types";
 import { redirect } from "next/navigation";
 
 export const registerAction = async (
@@ -18,7 +19,7 @@ export const registerAction = async (
       password,
     };
 
-    await apiClient("/users", {
+    await apiClient<User>("/users", {
       method: "POST",
       body: JSON.stringify(data),
     });
