@@ -1,6 +1,7 @@
 "use server";
 
 import { apiClient } from "@/lib/api";
+import { setToken } from "@/lib/auth";
 import { AutResponse, User } from "@/lib/types";
 
 export const registerAction = async (
@@ -50,7 +51,7 @@ export const loginAction = async (
       body: JSON.stringify(data),
     });
 
-    console.log("Login successful:", response);
+    await setToken(response.token);
 
     return { success: true, error: "", redirectTo: "/dashboard" };
   } catch (error) {
