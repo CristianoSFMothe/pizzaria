@@ -12,7 +12,7 @@ import {
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { useActionState, useEffect } from "react";
-import { loginAction } from "@/app/actions/auth";
+import { loginAction } from "@/actions/auth";
 import { useRouter } from "next/navigation";
 
 export const LoginForm = () => {

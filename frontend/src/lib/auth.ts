@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { apiClient } from "./api";
 import { User } from "./types";
+import { redirect } from "next/navigation";
 
 const COOKIE_NAME = "token_pizzaria";
 
@@ -40,4 +41,18 @@ export const getUser = async (): Promise<User | null> => {
     console.error("Failed to get user:", error);
     return null;
   }
+};
+
+export const requiredAdmin = async (): Promise<User> => {
+  const user = await getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  if (user?.role !== "ADMIN") {
+    redirect("/access-denied");
+  }
+
+  return user;
 };
