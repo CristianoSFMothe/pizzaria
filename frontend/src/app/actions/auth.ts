@@ -55,7 +55,6 @@ export const loginAction = async (
 
     return { success: true, error: "", redirectTo: "/dashboard" };
   } catch (error) {
-    console.error("Login failed:", error);
     if (error instanceof Error) {
       return { success: false, error: error.message || "Error ao fazer login" };
     }
