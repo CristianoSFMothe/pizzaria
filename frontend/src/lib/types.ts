@@ -1,0 +1,17 @@
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: "ADMIN" | "STAFF";
+  password: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AutResponse {
+  id: string;
+  name: string;
+  email: string;
+  role: "ADMIN" | "STAFF";
+  token: string;
+}
