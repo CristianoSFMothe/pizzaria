@@ -15,3 +15,9 @@ export interface AutResponse {
   role: "ADMIN" | "STAFF";
   token: string;
 }
+
+export interface Categories {
+  id: string;
+  name: string;
+  createdAt: string;
+}

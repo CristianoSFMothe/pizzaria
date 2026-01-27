@@ -31,7 +31,7 @@ const MobileSidebar = () => {
       <header className="bg-app-card border-app-card sticky top-0 z-50 border-b">
         <div className="flex h-16 items-center justify-between px-4">
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
-            <SheetTrigger>
+            <SheetTrigger asChild>
               <Button className="" variant="ghost" size={"icon"}>
                 <Menu className="h-6 w-6" />
               </Button>
