@@ -68,7 +68,7 @@ export const LoginForm = () => {
 
           <Button
             type="submit"
-            className="bg-brand-primary hover:bg-brand-primary/90 w-full cursor-pointer text-white"
+            className="bg-brand-primary hover:bg-brand-primary/90 w-full text-white"
           >
             {isPending ? "Acessando conta..." : "Acessar"}
           </Button>
