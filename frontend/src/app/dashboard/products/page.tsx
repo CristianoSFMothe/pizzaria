@@ -5,21 +5,20 @@ import { Package } from "lucide-react";
 import { ProductForm } from "@/components/dashboard/product-form";
 import Image from "next/image";
 import { Categories, Product } from "@/lib/types";
+import { Button } from "@/components/ui/button";
+import DeleteButtonProduct from "@/components/dashboard/delete-button";
 
 export default async function Products() {
   const token = await getToken();
 
-  // Buscar categorias para o formulário
   const categories = await apiClient<Categories[]>("/category", {
     token: token!,
   });
 
-  // Buscar produtos
   const products = await apiClient<Product[]>("/product", {
     token: token!,
   });
 
-  // Função para formatar o preço
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("pt-BR", {
       style: "currency",
@@ -57,9 +56,13 @@ export default async function Products() {
                 />
               </div>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base md:text-lg">
-                  <Package className="h-5 w-5" />
-                  <span>{product.name}</span>
+                <CardTitle className="flex items-center justify-between gap-2 text-base md:text-lg">
+                  <div className="flex flex-row items-center gap-2">
+                    <Package className="h-5 w-5" />
+                    <span>{product.name}</span>
+                  </div>
+
+                  <DeleteButtonProduct productId={product.id} />
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
