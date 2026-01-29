@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { formatPrice } from "@/lib/format";
+import { OrderModal } from "./order-modal";
 
 interface OrdersProps {
   token: string;
@@ -16,9 +17,11 @@ interface OrdersProps {
 const Orders = ({ token }: OrdersProps) => {
   const [loading, setLoading] = useState(true);
   const [orders, setOrders] = useState<Order[]>([]);
+  const [selectOrder, setSelectOrder] = useState<null | string>(null);
 
   const fetchOrders = async () => {
     try {
+      setLoading(true);
       const response = await apiClient<Order[]>("/orders?draft=false", {
         method: "GET",
         cache: "no-store",
@@ -65,8 +68,10 @@ const Orders = ({ token }: OrdersProps) => {
         <Button
           className="bg-brand-primary hover:bg-brand-primary/90 text-white"
           onClick={fetchOrders}
+          disabled={loading}
+          aria-busy={loading}
         >
-          <RefreshCw />
+          <RefreshCw className={loading ? "animate-spin" : ""} />
         </Button>
       </div>
 
@@ -123,6 +128,7 @@ const Orders = ({ token }: OrdersProps) => {
                   <Button
                     className="bg-brand-primary hover:bg-brand-primary/90 w-full text-white xl:w-auto"
                     size="sm"
+                    onClick={() => setSelectOrder(order.id)}
                   >
                     <EyeIcon className="h-5 w-5" />
                     Detalhes
@@ -133,6 +139,15 @@ const Orders = ({ token }: OrdersProps) => {
           ))}
         </div>
       )}
+
+      <OrderModal
+        orderId={selectOrder}
+        onClose={async () => {
+          setSelectOrder(null);
+          await fetchOrders();
+        }}
+        token={token}
+      />
     </div>
   );
 };
