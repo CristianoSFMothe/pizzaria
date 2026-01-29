@@ -1,5 +1,5 @@
 "use client";
-import React, { use, useState } from "react";
+import React, { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -24,6 +24,12 @@ import { createProductAction } from "@/actions/products";
 import { useRouter } from "next/navigation";
 import { Categories } from "@/lib/types";
 import Image from "next/image";
+import {
+  MAX_PRODUCT_IMAGE_SIZE,
+  PRODUCT_IMAGE_TYPES,
+  productSchema,
+} from "@/lib/validations/product";
+import { toast } from "sonner";
 
 interface ProductFormProps {
   categories: Categories[];
@@ -37,6 +43,13 @@ export function ProductForm({ categories }: ProductFormProps) {
   const [priceValue, setPriceValue] = useState("");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<{
+    name?: string;
+    price?: string;
+    description?: string;
+    categoryId?: string;
+    imageFile?: string;
+  }>({});
 
   const convertBRLToCents = (value: string): number => {
     const clearValue = value
@@ -53,41 +66,59 @@ export function ProductForm({ categories }: ProductFormProps) {
     event: React.FormEvent<HTMLFormElement>,
   ) => {
     event.preventDefault();
-    setIsLoading(true);
 
-    if (!imageFile) {
-      setIsLoading(false);
+    const formData = new FormData(event.currentTarget);
+    const values = {
+      name: String(formData.get("name") ?? "").trim(),
+      price: String(formData.get("price") ?? "").trim(),
+      description: String(formData.get("description") ?? "").trim(),
+      categoryId: selectedCategory,
+      imageFile,
+    };
+
+    const result = productSchema.safeParse(values);
+
+    if (!result.success) {
+      const errors = result.error.flatten().fieldErrors;
+
+      setFieldErrors({
+        name: errors.name?.[0],
+        price: errors.price?.[0],
+        description: errors.description?.[0],
+        categoryId: errors.categoryId?.[0],
+        imageFile: errors.imageFile?.[0],
+      });
       return;
     }
 
-    const formData = new FormData();
-    const formElement = event.currentTarget;
+    setFieldErrors({});
+    setIsLoading(true);
+    const productFormData = new FormData();
 
-    const name = (formElement.elements.namedItem("name") as HTMLInputElement)
-      ?.value;
-    const description = (
-      formElement.elements.namedItem("description") as HTMLInputElement
-    )?.value;
     const priceInCents = convertBRLToCents(priceValue);
 
-    formData.append("name", name);
-    formData.append("description", description);
-    formData.append("price", priceInCents.toString());
-    formData.append("categoryId", selectedCategory);
-    formData.append("file", imageFile);
+    productFormData.append("name", values.name);
+    productFormData.append("description", values.description);
+    productFormData.append("price", priceInCents.toString());
+    productFormData.append("categoryId", values.categoryId);
+    productFormData.append("file", imageFile as File);
 
-    const result = await createProductAction(formData);
+    const actionResult = await createProductAction(productFormData);
 
     setIsLoading(false);
 
-    if (result.success) {
+    if (actionResult.success) {
+      toast.success("Produto criado com sucesso");
       setOpen(false);
       setSelectedCategory("");
+      setPriceValue("");
+      setImagePreview(null);
+      setImageFile(null);
       router.refresh();
       return;
     } else {
-      console.log(result.error);
-      alert(result.error);
+      console.log(actionResult.error);
+      alert(actionResult.error);
     }
   };
 
@@ -107,15 +138,35 @@ export function ProductForm({ categories }: ProductFormProps) {
   const handlePriceChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatToBrl(event.target.value);
     setPriceValue(formatted);
+    if (fieldErrors.price) {
+      setFieldErrors((prev) => ({ ...prev, price: undefined }));
+    }
   };
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
 
     if (file) {
-      if (file.size > 5 * 1024 * 1024) return;
+      if (file.size > MAX_PRODUCT_IMAGE_SIZE) {
+        setFieldErrors((prev) => ({
+          ...prev,
+          imageFile: "Imagem deve ter no máximo 5MB",
+        }));
+        return;
+      }
+
+      if (!PRODUCT_IMAGE_TYPES.includes(file.type)) {
+        setFieldErrors((prev) => ({
+          ...prev,
+          imageFile: "Formato de imagem inválido",
+        }));
+        return;
+      }
 
       setImageFile(file);
+      if (fieldErrors.imageFile) {
+        setFieldErrors((prev) => ({ ...prev, imageFile: undefined }));
+      }
 
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -129,6 +180,23 @@ export function ProductForm({ categories }: ProductFormProps) {
   const handleClearImage = () => {
     setImagePreview(null);
     setImageFile(null);
+    if (fieldErrors.imageFile) {
+      setFieldErrors((prev) => ({ ...prev, imageFile: undefined }));
+    }
+  };
+
+  const handleFieldChange =
+    (field: "name" | "description") =>
+    () => {
+      if (!fieldErrors[field]) return;
+      setFieldErrors((prev) => ({ ...prev, [field]: undefined }));
+    };
+
+  const handleCategoryChange = (value: string) => {
+    setSelectedCategory(value);
+    if (fieldErrors.categoryId) {
+      setFieldErrors((prev) => ({ ...prev, categoryId: undefined }));
+    }
   };
 
   return (
@@ -146,7 +214,11 @@ export function ProductForm({ categories }: ProductFormProps) {
           <DialogDescription>Criando novo produto...</DialogDescription>
         </DialogHeader>
 
-        <form className="space-y-4" onSubmit={handleCreateProduct}>
+        <form
+          className="space-y-4"
+          noValidate
+          onSubmit={handleCreateProduct}
+        >
           <div>
             <Label htmlFor="name" className="mb-2">
               Nome do produto
@@ -156,8 +228,18 @@ export function ProductForm({ categories }: ProductFormProps) {
               name="name"
               required
               placeholder="Digite o nome do produto..."
+              onChange={handleFieldChange("name")}
+              aria-invalid={Boolean(fieldErrors.name)}
+              aria-describedby={
+                fieldErrors.name ? "product-name-error" : undefined
+              }
               className="border-app-border bg-app-background text-white"
             />
+            {fieldErrors.name && (
+              <p id="product-name-error" className="text-xs text-red-400">
+                {fieldErrors.name}
+              </p>
+            )}
           </div>
 
           <div>
@@ -172,7 +254,16 @@ export function ProductForm({ categories }: ProductFormProps) {
               className="border-app-border bg-app-background text-white"
               value={priceValue}
               onChange={handlePriceChange}
+              aria-invalid={Boolean(fieldErrors.price)}
+              aria-describedby={
+                fieldErrors.price ? "product-price-error" : undefined
+              }
             />
+            {fieldErrors.price && (
+              <p id="product-price-error" className="text-xs text-red-400">
+                {fieldErrors.price}
+              </p>
+            )}
           </div>
 
           <div>
@@ -184,8 +275,18 @@ export function ProductForm({ categories }: ProductFormProps) {
               name="description"
               required
               placeholder="Digite a descrição do produto..."
+              onChange={handleFieldChange("description")}
+              aria-invalid={Boolean(fieldErrors.description)}
+              aria-describedby={
+                fieldErrors.description ? "product-description-error" : undefined
+              }
               className="border-app-border bg-app-background min-h-25 text-white"
             />
+            {fieldErrors.description && (
+              <p id="product-description-error" className="text-xs text-red-400">
+                {fieldErrors.description}
+              </p>
+            )}
           </div>
 
           <div>
@@ -194,10 +295,16 @@ export function ProductForm({ categories }: ProductFormProps) {
             </Label>
             <Select
               value={selectedCategory}
-              onValueChange={setSelectedCategory}
+              onValueChange={handleCategoryChange}
               required
             >
-              <SelectTrigger className="border-app-border bg-app-background text-white">
+              <SelectTrigger
+                className="border-app-border bg-app-background text-white"
+                aria-invalid={Boolean(fieldErrors.categoryId)}
+                aria-describedby={
+                  fieldErrors.categoryId ? "product-category-error" : undefined
+                }
+              >
                 <SelectValue placeholder="Selecione uma categoria" />
               </SelectTrigger>
               <SelectContent className="bg-app-card border-app-border">
@@ -212,6 +319,11 @@ export function ProductForm({ categories }: ProductFormProps) {
                 ))}
               </SelectContent>
             </Select>
+            {fieldErrors.categoryId && (
+              <p id="product-category-error" className="text-xs text-red-400">
+                {fieldErrors.categoryId}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -254,8 +366,17 @@ export function ProductForm({ categories }: ProductFormProps) {
                   onChange={handleImageChange}
                   required
                   className="sr-only"
+                  aria-invalid={Boolean(fieldErrors.imageFile)}
+                  aria-describedby={
+                    fieldErrors.imageFile ? "product-image-error" : undefined
+                  }
                 />
               </Label>
+            )}
+            {fieldErrors.imageFile && (
+              <p id="product-image-error" className="text-xs text-red-400">
+                {fieldErrors.imageFile}
+              </p>
             )}
           </div>
 

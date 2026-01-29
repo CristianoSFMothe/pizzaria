@@ -11,19 +11,62 @@ import {
 } from "../ui/card";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useState, type FormEvent } from "react";
 import { loginAction } from "@/actions/auth";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { loginSchema } from "@/lib/validations/auth";
 
 export const LoginForm = () => {
   const router = useRouter();
   const [state, formAction, isPending] = useActionState(loginAction, null);
+  const [fieldErrors, setFieldErrors] = useState<{
+    email?: string;
+    password?: string;
+  }>({});
 
   useEffect(() => {
     if (state?.success && state?.redirectTo) {
       router.replace(state.redirectTo);
     }
   }, [state, router]);
+
+  useEffect(() => {
+    if (state?.error) {
+      toast.error(state.error);
+    }
+  }, [state]);
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const formData = new FormData(event.currentTarget);
+    const values = {
+      email: String(formData.get("email") ?? "").trim(),
+      password: String(formData.get("password") ?? ""),
+    };
+
+    const result = loginSchema.safeParse(values);
+
+    if (!result.success) {
+      const errors = result.error.flatten().fieldErrors;
+
+      setFieldErrors({
+        email: errors.email?.[0],
+        password: errors.password?.[0],
+      });
+      return;
+    }
+
+    setFieldErrors({});
+    formAction(formData);
+  };
+
+  const handleFieldChange =
+    (field: "email" | "password") => () => {
+      if (!fieldErrors[field]) return;
+      setFieldErrors((prev) => ({ ...prev, [field]: undefined }));
+    };
 
   return (
     <Card className="bg-app-card border-app-border mx-auto w-full max-w-md border">
@@ -36,7 +79,7 @@ export const LoginForm = () => {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form className="space-y-4" action={formAction}>
+        <form className="space-y-4" noValidate onSubmit={handleSubmit}>
           <div className="space-y-2">
             <Label htmlFor="email" className="text-white">
               E-mail
@@ -46,9 +89,18 @@ export const LoginForm = () => {
               id="email"
               name="email"
               placeholder="Informe seu e-mail"
-              required
+              onChange={handleFieldChange("email")}
+              aria-invalid={Boolean(fieldErrors.email)}
+              aria-describedby={
+                fieldErrors.email ? "login-email-error" : undefined
+              }
               className="bg-app-background border-app-border border text-white"
             />
+            {fieldErrors.email && (
+              <p id="login-email-error" className="text-xs text-red-400">
+                {fieldErrors.email}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -60,10 +112,18 @@ export const LoginForm = () => {
               id="password"
               name="password"
               placeholder="Informe sua senha"
-              required
-              minLength={3}
+              onChange={handleFieldChange("password")}
+              aria-invalid={Boolean(fieldErrors.password)}
+              aria-describedby={
+                fieldErrors.password ? "login-password-error" : undefined
+              }
               className="bg-app-background border-app-border border text-white"
             />
+            {fieldErrors.password && (
+              <p id="login-password-error" className="text-xs text-red-400">
+                {fieldErrors.password}
+              </p>
+            )}
           </div>
 
           <Button
@@ -72,12 +132,6 @@ export const LoginForm = () => {
           >
             {isPending ? "Acessando conta..." : "Acessar"}
           </Button>
-
-          {state?.error && (
-            <div className="message-error rounded-md bg-red-50 p-3 text-center text-sm text-red-500">
-              {state.error}
-            </div>
-          )}
 
           <p className="text-center text-sm text-gray-100">
             Ainda não possui uma conta?{" "}

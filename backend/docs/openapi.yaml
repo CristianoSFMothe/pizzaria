@@ -72,6 +72,8 @@ paths:
           $ref: '#/components/responses/ValidationError'
         "401":
           $ref: '#/components/responses/Unauthorized'
+        "409":
+          $ref: '#/components/responses/Conflict'
         "500":
           $ref: '#/components/responses/ServerError'
 
@@ -138,6 +140,32 @@ paths:
           $ref: '#/components/responses/ValidationError'
         "401":
           $ref: '#/components/responses/Unauthorized'
+        "500":
+          $ref: '#/components/responses/ServerError'
+
+  /category/remove:
+    delete:
+      tags: [Category]
+      summary: Remove categoria
+      description: Desativa a categoria (soft delete). Requer usuario com role ADMIN.
+      operationId: removeCategory
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/CategoryIdQuery'
+      responses:
+        "200":
+          description: Categoria desativada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteResponse'
+        "400":
+          $ref: '#/components/responses/ValidationError'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "404":
+          $ref: '#/components/responses/NotFound'
         "500":
           $ref: '#/components/responses/ServerError'
 

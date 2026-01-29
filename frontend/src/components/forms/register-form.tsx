@@ -11,19 +11,73 @@ import {
 } from "../ui/card";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useState, type FormEvent } from "react";
 import { registerAction } from "@/actions/auth";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { registerSchema } from "@/lib/validations/auth";
 
 export const RegisterForm = () => {
   const router = useRouter();
   const [state, formAction, isPending] = useActionState(registerAction, null);
+  const [fieldErrors, setFieldErrors] = useState<{
+    name?: string;
+    email?: string;
+    password?: string;
+  }>({});
 
   useEffect(() => {
-    if (state?.success && state?.redirectTo) {
-      router.replace(state.redirectTo);
+    if (!state) return;
+
+    if (state.success) {
+      toast.success("Conta criada com sucesso");
+      if (state.redirectTo) {
+        const timer = setTimeout(() => {
+          router.replace(state.redirectTo);
+        }, 1200);
+
+        return () => clearTimeout(timer);
+      }
+      return;
+    }
+
+    if (state.error) {
+      toast.error(state.error);
     }
   }, [state, router]);
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const formData = new FormData(event.currentTarget);
+    const values = {
+      name: String(formData.get("name") ?? "").trim(),
+      email: String(formData.get("email") ?? "").trim(),
+      password: String(formData.get("password") ?? ""),
+    };
+
+    const result = registerSchema.safeParse(values);
+
+    if (!result.success) {
+      const errors = result.error.flatten().fieldErrors;
+
+      setFieldErrors({
+        name: errors.name?.[0],
+        email: errors.email?.[0],
+        password: errors.password?.[0],
+      });
+      return;
+    }
+
+    setFieldErrors({});
+    formAction(formData);
+  };
+
+  const handleFieldChange =
+    (field: "name" | "email" | "password") => () => {
+      if (!fieldErrors[field]) return;
+      setFieldErrors((prev) => ({ ...prev, [field]: undefined }));
+    };
 
   return (
     <Card className="bg-app-card border-app-border mx-auto w-full max-w-md border">
@@ -36,7 +90,7 @@ export const RegisterForm = () => {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form className="space-y-4" action={formAction}>
+        <form className="space-y-4" noValidate onSubmit={handleSubmit}>
           <div className="space-y-2">
             <Label htmlFor="name" className="text-white">
               Nome
@@ -46,10 +100,18 @@ export const RegisterForm = () => {
               id="name"
               name="name"
               placeholder="Informe seu nome"
-              required
-              minLength={3}
+              onChange={handleFieldChange("name")}
+              aria-invalid={Boolean(fieldErrors.name)}
+              aria-describedby={
+                fieldErrors.name ? "register-name-error" : undefined
+              }
               className="bg-app-background border-app-border border text-white"
             />
+            {fieldErrors.name && (
+              <p id="register-name-error" className="text-xs text-red-400">
+                {fieldErrors.name}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -61,9 +123,18 @@ export const RegisterForm = () => {
               id="email"
               name="email"
               placeholder="Informe seu e-mail"
-              required
+              onChange={handleFieldChange("email")}
+              aria-invalid={Boolean(fieldErrors.email)}
+              aria-describedby={
+                fieldErrors.email ? "register-email-error" : undefined
+              }
               className="bg-app-background border-app-border border text-white"
             />
+            {fieldErrors.email && (
+              <p id="register-email-error" className="text-xs text-red-400">
+                {fieldErrors.email}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -75,10 +146,18 @@ export const RegisterForm = () => {
               id="password"
               name="password"
               placeholder="Informe sua senha"
-              required
-              minLength={3}
+              onChange={handleFieldChange("password")}
+              aria-invalid={Boolean(fieldErrors.password)}
+              aria-describedby={
+                fieldErrors.password ? "register-password-error" : undefined
+              }
               className="bg-app-background border-app-border border text-white"
             />
+            {fieldErrors.password && (
+              <p id="register-password-error" className="text-xs text-red-400">
+                {fieldErrors.password}
+              </p>
+            )}
           </div>
 
           <Button

@@ -25,10 +25,18 @@ class CreateProductService {
       where: {
         id: categoryId,
       },
+      select: {
+        id: true,
+        active: true,
+      },
     });
 
     if (!categoryExists) {
       throw new AppError("Categoria não existe", 404);
+    }
+
+    if (!categoryExists.active) {
+      throw new AppError("Categoria desativada", 400);
     }
 
     let bannerUrl = "";

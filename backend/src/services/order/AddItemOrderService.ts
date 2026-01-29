@@ -17,7 +17,7 @@ class AddItemOrderService {
       });
 
       if (!orderExists) {
-        throw new Error("Order não encontrada");
+        throw new AppError("Pedido não encontrado", 404);
       }
 
       const productExists = await prismaClient.product.findFirst({
@@ -28,7 +28,7 @@ class AddItemOrderService {
       });
 
       if (!productExists) {
-        throw new Error("Produto não encontrado");
+        throw new AppError("Produto não encontrado", 404);
       }
 
       const item = await prismaClient.item.create({
@@ -57,6 +57,9 @@ class AddItemOrderService {
 
       return item;
     } catch (err) {
+      if (err instanceof AppError) {
+        throw err;
+      }
       console.log(err);
       throw new AppError("Falha ao adicionar item no pedido", 500);
     }

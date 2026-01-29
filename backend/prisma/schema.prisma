@@ -26,8 +26,9 @@ model User {
 }
 
 model Category {
-  id   String @id @default(uuid())
-  name String
+  id     String  @id @default(uuid())
+  name   String  @unique
+  active Boolean @default(true)
 
   products Product[]
 

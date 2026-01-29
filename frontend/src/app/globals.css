@@ -143,3 +143,26 @@
 button {
   cursor: pointer;
 }
+
+.sonner-toast-progress::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  width: 100%;
+  background: currentColor;
+  opacity: 0.35;
+  transform-origin: left;
+  animation: sonner-progress var(--toast-duration, 4000ms) linear forwards;
+  pointer-events: none;
+}
+
+@keyframes sonner-progress {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
