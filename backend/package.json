@@ -4,7 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon --watch 'src/**/*.ts' --exec 'tsx' src/server.ts"
+    "dev": "nodemon --watch 'src/**/*.ts' --exec 'tsx' src/server.ts",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:create-user-controller": "jest tests/controllers/user/CreateUserController.test.ts",
+    "test:create-user-service": "jest tests/services/user/CreateUserService.test.ts",
+    "test:auth-user-controller": "jest tests/controllers/user/AuthUserController.test.ts",
+    "test:auth-user-service": "jest tests/services/user/AuthUserService.test.ts"
   },
   "keywords": [],
   "author": "",
@@ -13,14 +19,17 @@
   "devDependencies": {
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.5",
+    "@types/jest": "^29.5.12",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/js-yaml": "^4.0.9",
     "@types/multer": "^2.0.0",
     "@types/node": "^24.10.8",
     "@types/pg": "^8.16.0",
     "@types/swagger-ui-express": "^4.1.6",
+    "jest": "^29.7.0",
     "nodemon": "^3.1.4",
     "prisma": "^7.2.0",
+    "ts-jest": "^29.2.6",
     "typescript": "^5.9.3"
   },
   "dependencies": {
