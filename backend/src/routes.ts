@@ -9,8 +9,12 @@ import { DetailsUserController } from "./controllers/user/DetailsUserController"
 import { isAuthenticated } from "./middlewares/isAuthenticated";
 import { CreateCategoryController } from "./controllers/category/CreateCategoryController";
 import { isAdmin } from "./middlewares/isAdmin";
-import { createCategorySchema } from "./schemas/categorySchema";
+import {
+  createCategorySchema,
+  removeCategorySchema,
+} from "./schemas/categorySchema";
 import { ListCategoryController } from "./controllers/category/ListCategoryController";
+import { RemoveCategoryController } from "./controllers/category/RemoveCategoryController";
 import { CreateProductController } from "./controllers/product/CreateProductController";
 import { ListProductController } from "./controllers/product/ListProductController";
 import { ListProductByCategoryController } from "./controllers/product/ListProductByCategoryController";
@@ -64,6 +68,14 @@ router.post(
   isAdmin,
   validateSchema(createCategorySchema),
   new CreateCategoryController().handle,
+);
+
+router.delete(
+  "/category/remove",
+  isAuthenticated,
+  isAdmin,
+  validateSchema(removeCategorySchema),
+  new RemoveCategoryController().handle,
 );
 
 // Product by Category route

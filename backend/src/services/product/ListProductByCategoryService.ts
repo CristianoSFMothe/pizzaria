@@ -11,10 +11,18 @@ class ListProductByCategoryService {
       where: {
         id: categoryId,
       },
+      select: {
+        id: true,
+        active: true,
+      },
     });
 
     if (!categoryExists) {
       throw new AppError("Categoria nao existe", 404);
+    }
+
+    if (!categoryExists.active) {
+      throw new AppError("Categoria desativada", 400);
     }
 
     try {
