@@ -1,7 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import { ShoppingCart, Package, Tags, LogOut, Menu, icons } from "lucide-react";
+import { ShoppingCart, Package, Tags, LogOut, Menu } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "../ui/button";

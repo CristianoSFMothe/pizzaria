@@ -1,4 +1,8 @@
-const API_URL = process.env.API_URL as string;
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? process.env.API_URL;
+
+if (!API_URL) {
+  throw new Error("API_URL não configurada");
+}
 
 export const getApiUrl = () => {
   return API_URL;
