@@ -1,9 +1,11 @@
 "use client";
 
 import clsx from "clsx";
-import { ShoppingCart, Package, Tags } from "lucide-react";
+import { ShoppingCart, Package, Tags, LogOut } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Button } from "../ui/button";
+import { logoutAction } from "@/actions/auth";
 
 interface SidebarProps {
   userName: string;
@@ -49,6 +51,19 @@ const Sidebar = ({ userName }: SidebarProps) => {
           );
         })}
       </nav>
+
+      <div className="border-app-border border-t p-4 text-white">
+        <form action={logoutAction}>
+          <Button
+            type="submit"
+            variant="ghost"
+            className="hover:bg-brand-primary w-full justify-start gap-3 transition-colors duration-300 hover:text-white"
+          >
+            <LogOut className="h-5 w-5" />
+            Sair
+          </Button>
+        </form>
+      </div>
     </aside>
   );
 };
