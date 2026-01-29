@@ -16,9 +16,12 @@ import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { createCategoryAction } from "@/actions/categories";
 import { useRouter } from "next/navigation";
+import { categorySchema } from "@/lib/validations/category";
+import { toast } from "sonner";
 
 const CategoryForm = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<{ name?: string }>({});
   const router = useRouter();
 
   const handleCreateCategory = async (
@@ -27,16 +30,35 @@ const CategoryForm = () => {
     event.preventDefault();
 
     const formData = new FormData(event.currentTarget);
+    const values = {
+      name: String(formData.get("name") ?? "").trim(),
+    };
 
-    const result = await createCategoryAction(formData);
+    const result = categorySchema.safeParse(values);
 
-    if (result.success) {
+    if (!result.success) {
+      const errors = result.error.flatten().fieldErrors;
+      setFieldErrors({ name: errors.name?.[0] });
+      return;
+    }
+
+    setFieldErrors({});
+
+    const actionResult = await createCategoryAction(formData);
+
+    if (actionResult.success) {
+      toast.success("Categoria criada com sucesso");
       setIsOpen(false);
       router.refresh();
       return;
     } else {
-      console.log(result.error);
+      console.log(actionResult.error);
     }
+  };
+
+  const handleFieldChange = () => {
+    if (!fieldErrors.name) return;
+    setFieldErrors((prev) => ({ ...prev, name: undefined }));
   };
 
   return (
@@ -53,7 +75,11 @@ const CategoryForm = () => {
           <DialogDescription>Adicione nova categoria</DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleCreateCategory} className="space-y-4">
+        <form
+          onSubmit={handleCreateCategory}
+          className="space-y-4"
+          noValidate
+        >
           <div className="mt-4">
             <Label htmlFor="category" className="mb-2">
               Nome da categoria
@@ -65,8 +91,18 @@ const CategoryForm = () => {
               type="text"
               required
               placeholder="Digite o nome da categoria..."
+              onChange={handleFieldChange}
+              aria-invalid={Boolean(fieldErrors.name)}
+              aria-describedby={
+                fieldErrors.name ? "category-name-error" : undefined
+              }
               className="border-app-border bg-app-background text-white"
             />
+            {fieldErrors.name && (
+              <p id="category-name-error" className="text-xs text-red-400">
+                {fieldErrors.name}
+              </p>
+            )}
           </div>
 
           <Button
