@@ -3,9 +3,15 @@ import multer from "multer";
 import uploadConfig from "./config/multer";
 import { CreateUserController } from "./controllers/user/CreateUserController";
 import { validateSchema } from "./middlewares/validateSchema";
-import { authUserSchema, createUserSchema } from "./schemas/userSchema";
+import {
+  authUserSchema,
+  createUserSchema,
+  updateUserRoleSchema,
+} from "./schemas/userSchema";
 import { AuthUserController } from "./controllers/user/AuthUserController";
 import { DetailsUserController } from "./controllers/user/DetailsUserController";
+import { UpdateUserRoleController } from "./controllers/user/UpdateUserRoleController";
+import { ListUsersController } from "./controllers/user/ListUsersController";
 import { isAuthenticated } from "./middlewares/isAuthenticated";
 import { CreateCategoryController } from "./controllers/category/CreateCategoryController";
 import { isAdmin } from "./middlewares/isAdmin";
@@ -58,6 +64,21 @@ router.post(
 );
 
 router.get("/me", isAuthenticated, new DetailsUserController().handle);
+
+router.get(
+  "/users",
+  isAuthenticated,
+  isAdmin,
+  new ListUsersController().handle,
+);
+
+router.put(
+  "/users/role",
+  isAuthenticated,
+  isAdmin,
+  validateSchema(updateUserRoleSchema),
+  new UpdateUserRoleController().handle,
+);
 
 // Category routes
 router.get("/category", isAuthenticated, new ListCategoryController().handle);

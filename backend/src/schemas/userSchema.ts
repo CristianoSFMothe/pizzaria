@@ -24,3 +24,11 @@ export const authUserSchema = z.object({
     }),
   }),
 });
+
+export const updateUserRoleSchema = z.object({
+  body: z.object({
+    userId: z
+      .string({ message: "ID do usuário precisa ser uma string" })
+      .min(1, { message: "O ID do usuário é obrigatório" }),
+  }),
+});

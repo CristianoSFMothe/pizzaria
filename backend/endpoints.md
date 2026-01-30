@@ -57,7 +57,7 @@ Content-Type: application/json
 - `email`: Email válido (obrigatório)
 - `password`: Mínimo 6 caracteres (obrigatório)
 
-**Resposta de Sucesso (200):**
+**Resposta de Sucesso (201):**
 
 ```json
 {
@@ -65,17 +65,16 @@ Content-Type: application/json
   "name": "João Silva",
   "email": "joao@example.com",
   "role": "STAFF",
-  "createdAt": "2025-11-12T10:30:00.000Z",
-  "updatedAt": "2025-11-12T10:30:00.000Z"
+  "createdAt": "2025-11-12T10:30:00.000Z"
 }
 ```
 
 **Respostas de Erro:**
 
 ```json
-// 400 - Usuário já existe
+// 409 - E-mail já cadastrado
 {
-  "error": "Usuário já existente!"
+  "error": "E-mail já cadastrado"
 }
 
 // 400 - Validação falhou
@@ -90,7 +89,7 @@ Content-Type: application/json
 
 **Observações:**
 
-- Senha é criptografada com bcrypt (salt: 8 rounds)
+- Senha é criptografada com bcrypt (salt: 10 rounds)
 - Role padrão é `STAFF`
 - Senha não é retornada na resposta
 
@@ -133,6 +132,7 @@ Content-Type: application/json
   "id": "550e8400-e29b-41d4-a716-446655440000",
   "name": "João Silva",
   "email": "joao@example.com",
+  "role": "STAFF",
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1NTBlODQwMC1lMjliLTQxZDQtYTcxNi00NDY2NTU0NDAwMDAiLCJpYXQiOjE2MzU0MjM0MDB9.xxx"
 }
 ```
@@ -140,9 +140,9 @@ Content-Type: application/json
 **Respostas de Erro:**
 
 ```json
-// 400 - Credenciais inválidas
+// 401 - Credenciais inválidas
 {
-  "error": "Email ou senha incorretos!"
+  "error": "E-mail ou senha inválidos"
 }
 
 // 400 - Validação falhou
@@ -156,7 +156,7 @@ Content-Type: application/json
 
 **Observações:**
 
-- Token JWT contém `user_id` no campo `sub`
+- Token JWT contém o `id` do usuário no campo `sub`
 - Token deve ser usado nas próximas requisições autenticadas
 - Validade do token é configurada via variável de ambiente
 
@@ -185,7 +185,8 @@ Authorization: Bearer SEU_TOKEN_JWT
   "id": "550e8400-e29b-41d4-a716-446655440000",
   "name": "João Silva",
   "email": "joao@example.com",
-  "role": "STAFF"
+  "role": "STAFF",
+  "createdAt": "2025-11-12T10:30:00.000Z"
 }
 ```
 
@@ -197,6 +198,154 @@ Authorization: Bearer SEU_TOKEN_JWT
   "error": "Token inválido ou não fornecido"
 }
 ```
+
+---
+
+### 4. Atualizar Role do Usuário
+
+Atualiza a role de um usuário STAFF para ADMIN.
+
+**Endpoint:** `PUT /users/role`
+
+**Autenticação:** ✅ Requerida
+
+**Permissão:** Apenas ADMIN
+
+**Headers:**
+
+```
+Authorization: Bearer SEU_TOKEN_JWT
+Content-Type: application/json
+```
+
+**Body:**
+
+```json
+{
+  "userId": "550e8400-e29b-41d4-a716-446655440000"
+}
+```
+
+**Validações:**
+
+- `userId`: String não vazia (obrigatório)
+
+**Resposta de Sucesso (200):**
+
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "name": "João Silva",
+  "email": "joao@example.com",
+  "role": "ADMIN",
+  "createdAt": "2025-11-12T10:30:00.000Z"
+}
+```
+
+**Respostas de Erro:**
+
+```json
+// 401 - Não autenticado
+{
+  "error": "Usuário não autenticado"
+}
+
+// 401 - Sem permissão
+{
+  "error": "Usuário não ter permissão"
+}
+
+// 404 - Usuário não encontrado
+{
+  "error": "Usuário não encontrado"
+}
+
+// 400 - Usuário já é ADMIN
+{
+  "error": "Usuário já é ADMIN"
+}
+
+// 500 - Erro ao atualizar role
+{
+  "error": "Erro ao atualizar role do usuário"
+}
+
+// 400 - Validação falhou
+{
+  "error": "Erro validação",
+  "details": [
+    { "message": "O ID do usuário é obrigatório" }
+  ]
+}
+```
+
+**Observações:**
+
+- Apenas usuários com role `ADMIN` podem atualizar
+- Somente usuários com role `STAFF` são promovidos
+
+---
+
+### 5. Listar Usuários
+
+Lista todos os usuários cadastrados.
+
+**Endpoint:** `GET /users`
+
+**Autenticação:** ✅ Requerida
+
+**Permissão:** Apenas ADMIN
+
+**Headers:**
+
+```
+Authorization: Bearer SEU_TOKEN_JWT
+```
+
+**Resposta de Sucesso (200):**
+
+```json
+[
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "name": "João Silva",
+    "email": "joao@example.com",
+    "role": "STAFF",
+    "createdAt": "2025-11-12T10:30:00.000Z"
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440001",
+    "name": "Maria Souza",
+    "email": "maria@example.com",
+    "role": "ADMIN",
+    "createdAt": "2025-11-12T10:35:00.000Z"
+  }
+]
+```
+
+**Respostas de Erro:**
+
+```json
+// 401 - Não autenticado
+{
+  "error": "Usuário não autenticado"
+}
+
+// 401 - Sem permissão
+{
+  "error": "Usuário não ter permissão"
+}
+
+// 500 - Erro ao listar usuários
+{
+  "error": "Erro ao listar usuários"
+}
+```
+
+**Observações:**
+
+- Retorna apenas: `id`, `name`, `email`, `role` e `createdAt`
+- Ordena por `name` em ordem decrescente
 
 ---
 
@@ -229,7 +378,7 @@ Content-Type: application/json
 
 **Validações:**
 
-- `name`: Mínimo 2 caracteres (obrigatório)
+- `name`: Mínimo 3 caracteres (obrigatório)
 
 **Resposta de Sucesso (201):**
 
@@ -237,8 +386,7 @@ Content-Type: application/json
 {
   "id": "660e8400-e29b-41d4-a716-446655440001",
   "name": "Pizzas Doces",
-  "createdAt": "2025-11-12T10:30:00.000Z",
-  "updatedAt": "2025-11-12T10:30:00.000Z"
+  "createdAt": "2025-11-12T10:30:00.000Z"
 }
 ```
 
@@ -259,7 +407,7 @@ Content-Type: application/json
 {
   "error": "Erro validação",
   "details": [
-    { "message": "Nome da categoria precisa ter 2 caracteres" }
+    { "message": "Nome de categoria precisa ter 2 caracteres" }
   ]
 }
 ```
@@ -306,8 +454,65 @@ Authorization: Bearer SEU_TOKEN_JWT
 
 **Observações:**
 
-- Categorias são ordenadas por data de criação (mais recentes primeiro)
+- Retorna apenas categorias ativas (`active: true`)
+- Ordena por `name` em ordem decrescente
 - Retorna apenas: `id`, `name` e `createdAt`
+
+---
+
+### 3. Desativar Categoria
+
+Desativa uma categoria (soft delete).
+
+**Endpoint:** `DELETE /category/remove`
+
+**Autenticação:** ✅ Requerida
+
+**Permissão:** Apenas ADMIN
+
+**Headers:**
+
+```
+Authorization: Bearer SEU_TOKEN_JWT
+```
+
+**Query Parameters:**
+
+```
+categoryId: "660e8400-e29b-41d4-a716-446655440001"
+```
+
+**Exemplo de Uso:**
+
+```
+DELETE /category/remove?categoryId=660e8400-e29b-41d4-a716-446655440001
+```
+
+**Resposta de Sucesso (200):**
+
+```json
+{
+  "message": "Categoria desativada com sucesso"
+}
+```
+
+**Respostas de Erro:**
+
+```json
+// 404 - Categoria não encontrada
+{
+  "error": "Categoria nao encontrada"
+}
+
+// 400 - Categoria já desativada
+{
+  "error": "Categoria ja desativada"
+}
+```
+
+**Observações:**
+
+- Define `active` como `false`
 
 ---
 
@@ -336,7 +541,7 @@ Content-Type: multipart/form-data
 name: "Pizza Margherita"
 price: "3500"
 description: "Molho de tomate, mussarela e manjericão"
-category_id: "660e8400-e29b-41d4-a716-446655440001"
+categoryId: "660e8400-e29b-41d4-a716-446655440001"
 file: [arquivo de imagem]
 ```
 
@@ -345,10 +550,10 @@ file: [arquivo de imagem]
 - `name`: Mínimo 1 caractere (obrigatório)
 - `price`: String não vazia (obrigatório) - Valor em centavos
 - `description`: Mínimo 1 caractere (obrigatório)
-- `category_id`: UUID válido (obrigatório)
+- `categoryId`: UUID válido (obrigatório)
 - `file`: Imagem obrigatória (JPEG, JPG, PNG - máx 4MB)
 
-**Resposta de Sucesso (200):**
+**Resposta de Sucesso (201):**
 
 ```json
 {
@@ -357,10 +562,8 @@ file: [arquivo de imagem]
   "price": 3500,
   "description": "Molho de tomate, mussarela e manjericão",
   "banner": "https://res.cloudinary.com/seu-cloud/image/upload/v1699792800/products/1699792800-margherita.jpg",
-  "disabled": false,
-  "category_id": "660e8400-e29b-41d4-a716-446655440001",
-  "createdAt": "2025-11-12T10:30:00.000Z",
-  "updatedAt": "2025-11-12T10:30:00.000Z"
+  "categoryId": "660e8400-e29b-41d4-a716-446655440001",
+  "createdAt": "2025-11-12T10:30:00.000Z"
 }
 ```
 
@@ -369,7 +572,7 @@ file: [arquivo de imagem]
 ```json
 // 400 - Imagem não fornecida
 {
-  "error": "A imagem do produto é obrigatória"
+  "error": "Imagem do produto é obrigatória"
 }
 
 // 400 - Formato inválido
@@ -377,14 +580,19 @@ file: [arquivo de imagem]
   "error": "Formato de arquivo invalido, use apenas JPG, JPEG, PNG."
 }
 
-// 400 - Categoria não existe
+// 404 - Categoria não existe
 {
-  "error": "Categoria não encontrada!"
+  "error": "Categoria não existe"
 }
 
-// 400 - Erro no upload
+// 400 - Categoria desativada
 {
-  "error": "Erro ao fazer o upload a imagem!"
+  "error": "Categoria desativada"
+}
+
+// 500 - Erro no upload
+{
+  "error": "Erro ao enviar imagem do produto"
 }
 
 // 401 - Sem permissão
@@ -405,7 +613,7 @@ file: [arquivo de imagem]
 
 Lista todos os produtos com filtro de status.
 
-**Endpoint:** `GET /products`
+**Endpoint:** `GET /product`
 
 **Autenticação:** ✅ Requerida
 
@@ -426,9 +634,9 @@ disabled: "true" | "false" (opcional, padrão: "false")
 **Exemplos de Uso:**
 
 ```
-GET /products                    → Retorna produtos ativos (disabled=false)
-GET /products?disabled=false     → Retorna produtos ativos
-GET /products?disabled=true      → Retorna produtos desativados
+GET /product                    → Retorna produtos ativos (disabled=false)
+GET /product?disabled=false     → Retorna produtos ativos
+GET /product?disabled=true      → Retorna produtos desativados
 ```
 
 **Resposta de Sucesso (200):**
@@ -442,7 +650,7 @@ GET /products?disabled=true      → Retorna produtos desativados
     "description": "Molho de tomate, mussarela e manjericão",
     "banner": "https://res.cloudinary.com/.../products/margherita.jpg",
     "disabled": false,
-    "category_id": "660e8400-e29b-41d4-a716-446655440001",
+    "categoryId": "660e8400-e29b-41d4-a716-446655440001",
     "createdAt": "2025-11-12T10:30:00.000Z",
     "category": {
       "id": "660e8400-e29b-41d4-a716-446655440001",
@@ -456,7 +664,7 @@ GET /products?disabled=true      → Retorna produtos desativados
     "description": "Calabresa, cebola e mussarela",
     "banner": "https://res.cloudinary.com/.../products/calabresa.jpg",
     "disabled": false,
-    "category_id": "660e8400-e29b-41d4-a716-446655440001",
+    "categoryId": "660e8400-e29b-41d4-a716-446655440001",
     "createdAt": "2025-11-12T10:35:00.000Z",
     "category": {
       "id": "660e8400-e29b-41d4-a716-446655440001",
@@ -468,7 +676,7 @@ GET /products?disabled=true      → Retorna produtos desativados
 
 **Observações:**
 
-- Produtos são ordenados por data de criação (mais recentes primeiro)
+- Ordena por `name` em ordem decrescente
 - Inclui dados da categoria relacionada
 - Se `disabled` não for enviado, o padrão é `false`
 
@@ -493,29 +701,29 @@ Authorization: Bearer SEU_TOKEN_JWT
 **Query Parameters:**
 
 ```
-product_id: "770e8400-e29b-41d4-a716-446655440001"
+productId: "770e8400-e29b-41d4-a716-446655440001"
 ```
 
 **Exemplo de Uso:**
 
 ```
-DELETE /product?product_id=770e8400-e29b-41d4-a716-446655440001
+DELETE /product?productId=770e8400-e29b-41d4-a716-446655440001
 ```
 
 **Resposta de Sucesso (200):**
 
 ```json
 {
-  "message": "Produto deletado/arquivado com sucesso!"
+  "message": "Produto deletado com sucesso"
 }
 ```
 
 **Respostas de Erro:**
 
 ```json
-// 400 - Falha ao deletar
+// 500 - Falha ao deletar
 {
-  "error": "Falha ao deletar o produto"
+  "error": "Erro ao deletar produto"
 }
 
 // 401 - Sem permissão
@@ -550,13 +758,13 @@ Authorization: Bearer SEU_TOKEN_JWT
 **Query Parameters:**
 
 ```
-category_id: "660e8400-e29b-41d4-a716-446655440001"
+categoryId: "660e8400-e29b-41d4-a716-446655440001"
 ```
 
 **Exemplo de Uso:**
 
 ```
-GET /category/product?category_id=660e8400-e29b-41d4-a716-446655440001
+GET /category/product?categoryId=660e8400-e29b-41d4-a716-446655440001
 ```
 
 **Resposta de Sucesso (200):**
@@ -570,7 +778,7 @@ GET /category/product?category_id=660e8400-e29b-41d4-a716-446655440001
     "description": "Molho de tomate, mussarela e manjericão",
     "banner": "https://res.cloudinary.com/.../products/margherita.jpg",
     "disabled": false,
-    "category_id": "660e8400-e29b-41d4-a716-446655440001",
+    "categoryId": "660e8400-e29b-41d4-a716-446655440001",
     "createdAt": "2025-11-12T10:30:00.000Z",
     "category": {
       "id": "660e8400-e29b-41d4-a716-446655440001",
@@ -584,7 +792,7 @@ GET /category/product?category_id=660e8400-e29b-41d4-a716-446655440001
     "description": "Calabresa, cebola e mussarela",
     "banner": "https://res.cloudinary.com/.../products/calabresa.jpg",
     "disabled": false,
-    "category_id": "660e8400-e29b-41d4-a716-446655440001",
+    "categoryId": "660e8400-e29b-41d4-a716-446655440001",
     "createdAt": "2025-11-12T10:35:00.000Z",
     "category": {
       "id": "660e8400-e29b-41d4-a716-446655440001",
@@ -597,9 +805,14 @@ GET /category/product?category_id=660e8400-e29b-41d4-a716-446655440001
 **Respostas de Erro:**
 
 ```json
-// 400 - Categoria não existe
+// 404 - Categoria não existe
 {
-  "error": "Categoria não encontrada!"
+  "error": "Categoria nao existe"
+}
+
+// 400 - Categoria desativada
+{
+  "error": "Categoria desativada"
 }
 
 // 400 - Validação falhou
@@ -614,7 +827,7 @@ GET /category/product?category_id=660e8400-e29b-41d4-a716-446655440001
 **Observações:**
 
 - Retorna apenas produtos com `disabled: false`
-- Produtos são ordenados por data de criação (mais recentes primeiro)
+- Ordena por `name` em ordem decrescente
 - Inclui dados da categoria
 
 ---
@@ -712,16 +925,16 @@ Content-Type: application/json
 
 ```json
 {
-  "order_id": "880e8400-e29b-41d4-a716-446655440001",
-  "product_id": "770e8400-e29b-41d4-a716-446655440001",
+  "orderId": "880e8400-e29b-41d4-a716-446655440001",
+  "productId": "770e8400-e29b-41d4-a716-446655440001",
   "amount": 2
 }
 ```
 
 **Validações:**
 
-- `order_id`: String não vazia (obrigatório)
-- `product_id`: String não vazia (obrigatório)
+- `orderId`: String não vazia (obrigatório)
+- `productId`: String não vazia (obrigatório)
 - `amount`: Número inteiro positivo (obrigatório)
 
 **Resposta de Sucesso (201):**
@@ -730,8 +943,8 @@ Content-Type: application/json
 {
   "id": "990e8400-e29b-41d4-a716-446655440001",
   "amount": 2,
-  "order_id": "880e8400-e29b-41d4-a716-446655440001",
-  "product_id": "770e8400-e29b-41d4-a716-446655440001",
+  "orderId": "880e8400-e29b-41d4-a716-446655440001",
+  "productId": "770e8400-e29b-41d4-a716-446655440001",
   "createdAt": "2025-11-12T10:35:00.000Z",
   "product": {
     "id": "770e8400-e29b-41d4-a716-446655440001",
@@ -746,12 +959,12 @@ Content-Type: application/json
 **Respostas de Erro:**
 
 ```json
-// 400 - Order não encontrada
+// 404 - Pedido não encontrado
 {
-  "error": "Order não encontrada"
+  "error": "Pedido não encontrado"
 }
 
-// 400 - Produto não encontrado ou desativado
+// 404 - Produto não encontrado ou desativado
 {
   "error": "Produto não encontrado"
 }
@@ -792,13 +1005,13 @@ Authorization: Bearer SEU_TOKEN_JWT
 **Query Parameters:**
 
 ```
-item_id: "990e8400-e29b-41d4-a716-446655440001"
+itemId: "990e8400-e29b-41d4-a716-446655440001"
 ```
 
 **Exemplo de Uso:**
 
 ```
-DELETE /order/remove?item_id=990e8400-e29b-41d4-a716-446655440001
+DELETE /order/remove?itemId=990e8400-e29b-41d4-a716-446655440001
 ```
 
 **Resposta de Sucesso (200):**
@@ -812,21 +1025,16 @@ DELETE /order/remove?item_id=990e8400-e29b-41d4-a716-446655440001
 **Respostas de Erro:**
 
 ```json
-// 400 - Item não encontrado
+// 500 - Falha ao remover
 {
-  "error": "Item não encontrado"
-}
-
-// 400 - Falha ao remover
-{
-  "error": "Falha ao remover item do pedido"
+  "error": "Erro ao remover item do pedido"
 }
 
 // 400 - Validação falhou
 {
   "error": "Erro validação",
   "details": [
-    { "message": "O item_id é obrigatório" }
+    { "message": "O ID do item e obrigatório" }
   ]
 }
 ```
@@ -859,14 +1067,14 @@ Content-Type: application/json
 
 ```json
 {
-  "order_id": "880e8400-e29b-41d4-a716-446655440001",
+  "orderId": "880e8400-e29b-41d4-a716-446655440001",
   "name": "Mesa 5 - João"
 }
 ```
 
 **Validações:**
 
-- `order_id`: String não vazia (obrigatório)
+- `orderId`: String não vazia (obrigatório)
 - `name`: String não vazia (obrigatório)
 
 **Resposta de Sucesso (200):**
@@ -885,7 +1093,7 @@ Content-Type: application/json
 **Respostas de Erro:**
 
 ```json
-// 400 - Pedido não encontrado
+// 500 - Falha ao enviar pedido
 {
   "error": "Falha ao enviar pedido"
 }
@@ -928,13 +1136,13 @@ Content-Type: application/json
 
 ```json
 {
-  "order_id": "880e8400-e29b-41d4-a716-446655440001"
+  "orderId": "880e8400-e29b-41d4-a716-446655440001"
 }
 ```
 
 **Validações:**
 
-- `order_id`: String não vazia (obrigatório)
+- `orderId`: String não vazia (obrigatório)
 
 **Resposta de Sucesso (200):**
 
@@ -943,8 +1151,8 @@ Content-Type: application/json
   "id": "880e8400-e29b-41d4-a716-446655440001",
   "table": 5,
   "name": "Mesa 5 - João",
-  "draft": false,
-  "status": true,
+  "draft": true,
+  "status": false,
   "createdAt": "2025-11-12T10:30:00.000Z"
 }
 ```
@@ -952,7 +1160,7 @@ Content-Type: application/json
 **Respostas de Erro:**
 
 ```json
-// 400 - Pedido não encontrado
+// 500 - Falha ao finalizar pedido
 {
   "error": "Falha ao finalizar pedido"
 }
@@ -968,8 +1176,8 @@ Content-Type: application/json
 
 **Observações:**
 
-- Altera `status` de `false` para `true`
-- Indica que o pedido foi entregue/finalizado
+- Atualiza `draft` para `true`
+- `status` permanece inalterado
 
 ---
 
@@ -1089,13 +1297,13 @@ Authorization: Bearer SEU_TOKEN_JWT
 **Query Parameters:**
 
 ```
-order_id: "880e8400-e29b-41d4-a716-446655440001"
+orderId: "880e8400-e29b-41d4-a716-446655440001"
 ```
 
 **Exemplo de Uso:**
 
 ```
-GET /order/detail?order_id=880e8400-e29b-41d4-a716-446655440001
+GET /order/detail?orderId=880e8400-e29b-41d4-a716-446655440001
 ```
 
 **Resposta de Sucesso (200):**
@@ -1141,16 +1349,16 @@ GET /order/detail?order_id=880e8400-e29b-41d4-a716-446655440001
 **Respostas de Erro:**
 
 ```json
-// 400 - Pedido não encontrado
+// 500 - Falha ao buscar detalhes da ordem
 {
-  "error": "Ordem não encontrada"
+  "error": "Falha ao buscar detalhes da ordem"
 }
 
 // 400 - Validação falhou
 {
   "error": "Erro validação",
   "details": [
-    { "message": "O order_id é obrigatório" }
+    { "message": "O orderId é obrigatório" }
   ]
 }
 ```
@@ -1182,13 +1390,13 @@ Authorization: Bearer SEU_TOKEN_JWT
 **Query Parameters:**
 
 ```
-order_id: "880e8400-e29b-41d4-a716-446655440001"
+orderId: "880e8400-e29b-41d4-a716-446655440001"
 ```
 
 **Exemplo de Uso:**
 
 ```
-DELETE /order?order_id=880e8400-e29b-41d4-a716-446655440001
+DELETE /order?orderId=880e8400-e29b-41d4-a716-446655440001
 ```
 
 **Resposta de Sucesso (200):**
@@ -1202,9 +1410,9 @@ DELETE /order?order_id=880e8400-e29b-41d4-a716-446655440001
 **Respostas de Erro:**
 
 ```json
-// 400 - Pedido não encontrado
+// 500 - Falha ao deletar pedido
 {
-  "error": "Falha ao deletar o pedido"
+  "error": "Falha ao deletar pedido"
 }
 
 // 400 - Validação falhou
@@ -1233,10 +1441,13 @@ DELETE /order?order_id=880e8400-e29b-41d4-a716-446655440001
 | POST   | /users            | ❌           | Pública     | Criar novo usuário                  |
 | POST   | /session          | ❌           | Pública     | Autenticar usuário (login)          |
 | GET    | /me               | ✅           | STAFF/ADMIN | Obter dados do usuário logado       |
+| GET    | /users            | ✅           | ADMIN       | Listar usuários                     |
+| PUT    | /users/role       | ✅           | ADMIN       | Atualizar role do usuário           |
 | POST   | /category         | ✅           | ADMIN       | Criar nova categoria                |
 | GET    | /category         | ✅           | STAFF/ADMIN | Listar todas as categorias          |
+| DELETE | /category/remove  | ✅           | ADMIN       | Desativar categoria                 |
 | POST   | /product          | ✅           | ADMIN       | Criar novo produto (com imagem)     |
-| GET    | /products         | ✅           | STAFF/ADMIN | Listar produtos (filtro por status) |
+| GET    | /product          | ✅           | STAFF/ADMIN | Listar produtos (filtro por status) |
 | DELETE | /product          | ✅           | ADMIN       | Desativar produto (soft delete)     |
 | GET    | /category/product | ✅           | STAFF/ADMIN | Listar produtos de uma categoria    |
 | POST   | /order            | ✅           | STAFF/ADMIN | Criar novo pedido                   |
@@ -1258,6 +1469,8 @@ DELETE /order?order_id=880e8400-e29b-41d4-a716-446655440001
 | 201    | Created        | Recurso criado com sucesso (POST)          |
 | 400    | Bad Request    | Erro de validação ou lógica de negócio     |
 | 401    | Unauthorized   | Token inválido ou sem permissão            |
+| 404    | Not Found      | Recurso não encontrado                     |
+| 409    | Conflict       | Conflito de dados (ex: duplicidade)        |
 | 500    | Internal Error | Erro interno do servidor                   |
 
 ---
@@ -1284,6 +1497,7 @@ DELETE /order?order_id=880e8400-e29b-41d4-a716-446655440001
 ### Soft Delete
 
 - Produtos: Campo `disabled` (`true` = desativado, `false` = ativo)
+- Categorias: Campo `active` (`true` = ativo, `false` = desativado)
 - Mantém integridade referencial e histórico
 
 ### Status dos Pedidos
@@ -1308,4 +1522,4 @@ DELETE /order?order_id=880e8400-e29b-41d4-a716-446655440001
 
 **Documento criado em**: 12/11/2025  
 **Versão da API**: 2.0.0  
-**Última atualização**: Documentação completa de todos os endpoints
+**Última atualização**: 30/01/2026
