@@ -6,11 +6,8 @@ import { Categories } from "@/lib/types";
 import { revalidatePath } from "next/cache";
 
 export const createCategoryAction = async (formData: FormData) => {
-  const name = formData.get("name") as string;
-
   try {
     const token = await getToken();
-
     const name = formData.get("name") as string;
 
     await apiClient<Categories>("/category", {
@@ -26,6 +23,6 @@ export const createCategoryAction = async (formData: FormData) => {
     if (error instanceof Error) {
       return { success: false, error: error.message };
     }
-    return { success: false, error: "Error ao criar categoria" };
+    return { success: false, error: "Erro ao cadastrar categoria" };
   }
 };
