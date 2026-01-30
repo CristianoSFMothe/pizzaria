@@ -13,7 +13,13 @@
     "test:auth-user-service": "jest tests/services/user/AuthUserService.test.ts",
     "test:detail-user-controller": "jest tests/controllers/user/DetailsUserController.test.ts",
     "test:detail-user-service": "jest tests/services/user/DetailsUserService.test.ts",
-    "test:detail-order-service": "jest tests/services/order/DetailOrderService.test.ts"
+    "test:detail-order-service": "jest tests/services/order/DetailOrderService.test.ts",
+    "test:create-category-controller": "jest tests/controllers/category/CreateCategoryController.test.ts",
+    "test:create-category-service": "jest tests/services/category/CreateCategoryService.test.ts",
+    "test:list-category-controller": "jest tests/controllers/category/ListCategoryController.test.ts",
+    "test:list-category-service": "jest tests/services/category/ListCategoryService.test.ts",
+    "test:remove-category-controller": "jest tests/controllers/category/RemoveCategoryController.test.ts",
+    "test:remove-category-service": "jest tests/services/category/RemoveCategoryService.test.ts"
   },
   "keywords": [],
   "author": "",
