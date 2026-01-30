@@ -1,5 +1,5 @@
 import CategoryForm from "@/components/dashboard/category-form";
-import { Button } from "@/components/ui/button";
+import CategoriesRefreshButton from "@/components/dashboard/categories-refresh-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { apiClient } from "@/lib/api";
 import { getToken } from "@/lib/auth";
@@ -21,7 +21,10 @@ const PageCategories = async () => {
           </p>
         </div>
 
-        <CategoryForm />
+        <div className="flex flex-wrap items-center gap-2">
+          <CategoryForm />
+          <CategoriesRefreshButton />
+        </div>
       </div>
 
       {categories.length !== 0 && (

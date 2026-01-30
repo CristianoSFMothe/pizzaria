@@ -14,7 +14,8 @@ import { UpdateUserRoleController } from "./controllers/user/UpdateUserRoleContr
 import { ListUsersController } from "./controllers/user/ListUsersController";
 import { isAuthenticated } from "./middlewares/isAuthenticated";
 import { CreateCategoryController } from "./controllers/category/CreateCategoryController";
-import { isAdmin } from "./middlewares/isAdmin";
+import { isAdminOrMaster } from "./middlewares/isAdminOrMaster";
+import { isMaster } from "./middlewares/isMaster";
 import {
   createCategorySchema,
   removeCategorySchema,
@@ -68,14 +69,14 @@ router.get("/me", isAuthenticated, new DetailsUserController().handle);
 router.get(
   "/users",
   isAuthenticated,
-  isAdmin,
+  isAdminOrMaster,
   new ListUsersController().handle,
 );
 
 router.put(
   "/users/role",
   isAuthenticated,
-  isAdmin,
+  isMaster,
   validateSchema(updateUserRoleSchema),
   new UpdateUserRoleController().handle,
 );
@@ -86,7 +87,7 @@ router.get("/category", isAuthenticated, new ListCategoryController().handle);
 router.post(
   "/category",
   isAuthenticated,
-  isAdmin,
+  isAdminOrMaster,
   validateSchema(createCategorySchema),
   new CreateCategoryController().handle,
 );
@@ -94,7 +95,7 @@ router.post(
 router.delete(
   "/category/remove",
   isAuthenticated,
-  isAdmin,
+  isAdminOrMaster,
   validateSchema(removeCategorySchema),
   new RemoveCategoryController().handle,
 );
@@ -163,7 +164,7 @@ router.delete(
 router.post(
   "/product",
   isAuthenticated,
-  isAdmin,
+  isAdminOrMaster,
   upload.single("file"),
   validateSchema(createProductSchema),
   new CreateProductController().handle,
@@ -179,7 +180,7 @@ router.get(
 router.delete(
   "/product",
   isAuthenticated,
-  isAdmin,
+  isAdminOrMaster,
   new DeleteProductController().handle,
 );
 
