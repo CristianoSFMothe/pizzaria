@@ -43,6 +43,7 @@ em memoria e integracao com Cloudinary para imagens de produtos.
 | GET    | /me               | Detalhe do usuario                |
 | GET    | /category         | Lista categorias                  |
 | POST   | /category         | Cria categoria                    |
+| DELETE | /category/remove  | Desativa categoria                |
 | GET    | /category/product | Lista produtos por categoria      |
 | POST   | /order            | Cria pedido                       |
 | GET    | /orders           | Lista pedidos (filtra por draft)  |
@@ -66,6 +67,17 @@ npm install
 
 ```bash
 npm run dev
+```
+
+## Testes
+
+```bash
+npm test
+npm run test:watch
+npm run test:users
+npm run test:product
+npm run test:category
+npm run test:order
 ```
 
 ## Documentacao da API (Swagger)
