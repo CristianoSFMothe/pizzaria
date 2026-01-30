@@ -8,10 +8,13 @@
 
 Backend REST em Node.js/TypeScript baseado em Express 5, com arquitetura em
 camadas (Rotas -> Middlewares -> Controllers -> Services -> Prisma). A API
-implementa autenticacao JWT, autorizacao por role (ADMIN/STAFF) e validacao de
+implementa autenticacao JWT, autorizacao por role (MASTER/ADMIN/STAFF) e validacao de
 entrada via Zod. Os dados sao persistidos em PostgreSQL com Prisma ORM, incluindo
 relacionamentos entre Order, Item e Product. O modulo de upload utiliza Multer
 em memoria e integracao com Cloudinary para imagens de produtos.
+
+Roles disponiveis: MASTER, ADMIN e STAFF. O MASTER herda todos os privilegios
+do ADMIN e possui rotas exclusivas (ex: atualizar role de usuario).
 
 ## Tecnologias utilizadas
 
@@ -46,6 +49,7 @@ em memoria e integracao com Cloudinary para imagens de produtos.
 | GET    | /category         | Lista categorias                  |
 | POST   | /category         | Cria categoria                    |
 | DELETE | /category/remove  | Desativa categoria                |
+| PUT    | /category/update  | Atualiza nome da categoria        |
 | GET    | /category/product | Lista produtos por categoria      |
 | POST   | /order            | Cria pedido                       |
 | GET    | /orders           | Lista pedidos (filtra por draft)  |
@@ -58,6 +62,7 @@ em memoria e integracao com Cloudinary para imagens de produtos.
 | POST   | /product          | Cria produto                      |
 | GET    | /product          | Lista produtos                    |
 | DELETE | /product          | Desativa produto                  |
+| PUT    | /product/update   | Atualiza produto                  |
 
 ## Comando para instalar versoes
 
@@ -70,6 +75,32 @@ npm install
 ```bash
 npm run dev
 ```
+
+## Seed do usuario MASTER
+
+Cria o usuario MASTER (caso nao exista) para controlar o sistema.
+
+```bash
+npm run seed
+```
+
+Variaveis usadas no seed: `MASTER_EMAIL`, `MASTER_PASSWORD` e `MASTER_NAME`
+(opcional).
+
+## Variaveis de ambiente
+
+Copie `.example.env` para `.env` e ajuste os valores.
+
+- PORT
+- JWT_SECRETE
+- DATABASE_URL
+- CLOUDINARY_CLOUD_NAME
+- CLOUDINARY_API_KEY
+- CLOUDINARY_API_SECRET
+- CLOUDINARY_URL
+- MASTER_EMAIL
+- MASTER_PASSWORD
+- MASTER_NAME
 
 ## Testes
 

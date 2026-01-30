@@ -170,7 +170,7 @@ Retorna informações do usuário logado.
 
 **Autenticação:** ✅ Requerida
 
-**Permissão:** STAFF ou ADMIN
+**Permissão:** STAFF, ADMIN ou MASTER
 
 **Headers:**
 
@@ -203,13 +203,13 @@ Authorization: Bearer SEU_TOKEN_JWT
 
 ### 4. Atualizar Role do Usuário
 
-Atualiza a role de um usuário STAFF para ADMIN.
+Atualiza a role de um usuário STAFF para ADMIN ou de ADMIN para STAFF.
 
 **Endpoint:** `PUT /users/role`
 
 **Autenticação:** ✅ Requerida
 
-**Permissão:** Apenas ADMIN
+**Permissão:** Apenas MASTER
 
 **Headers:**
 
@@ -260,9 +260,9 @@ Content-Type: application/json
   "error": "Usuário não encontrado"
 }
 
-// 400 - Usuário já é ADMIN
+// 400 - Role inválida para atualização
 {
-  "error": "Usuário já é ADMIN"
+  "error": "Role do usuário inválida"
 }
 
 // 500 - Erro ao atualizar role
@@ -281,8 +281,8 @@ Content-Type: application/json
 
 **Observações:**
 
-- Apenas usuários com role `ADMIN` podem atualizar
-- Somente usuários com role `STAFF` são promovidos
+- Apenas usuários com role `MASTER` podem atualizar
+- Somente usuários com role `STAFF` ou `ADMIN` são alternados
 
 ---
 
@@ -294,7 +294,7 @@ Lista todos os usuários cadastrados.
 
 **Autenticação:** ✅ Requerida
 
-**Permissão:** Apenas ADMIN
+**Permissão:** ADMIN ou MASTER
 
 **Headers:**
 
@@ -359,7 +359,7 @@ Cria uma nova categoria de produtos.
 
 **Autenticação:** ✅ Requerida
 
-**Permissão:** Apenas ADMIN
+**Permissão:** ADMIN ou MASTER
 
 **Headers:**
 
@@ -422,7 +422,7 @@ Lista todas as categorias cadastradas.
 
 **Autenticação:** ✅ Requerida
 
-**Permissão:** STAFF ou ADMIN
+**Permissão:** STAFF, ADMIN ou MASTER
 
 **Headers:**
 
@@ -468,7 +468,7 @@ Desativa uma categoria (soft delete).
 
 **Autenticação:** ✅ Requerida
 
-**Permissão:** Apenas ADMIN
+**Permissão:** ADMIN ou MASTER
 
 **Headers:**
 
@@ -516,6 +516,78 @@ DELETE /category/remove?categoryId=660e8400-e29b-41d4-a716-446655440001
 
 ---
 
+### 4. Atualizar Categoria
+
+Atualiza o nome de uma categoria existente.
+
+**Endpoint:** `PUT /category/update`
+
+**Autenticação:** ✅ Requerida
+
+**Permissão:** ADMIN ou MASTER
+
+**Headers:**
+
+```
+Authorization: Bearer SEU_TOKEN_JWT
+Content-Type: application/json
+```
+
+**Query Parameters:**
+
+```
+categoryId: "660e8400-e29b-41d4-a716-446655440001"
+```
+
+**Body:**
+
+```json
+{
+  "name": "Pizzas Especiais"
+}
+```
+
+**Validações:**
+
+- `categoryId`: String não vazia (obrigatório)
+- `name`: Mínimo 3 caracteres (obrigatório)
+
+**Resposta de Sucesso (200):**
+
+```json
+{
+  "id": "660e8400-e29b-41d4-a716-446655440001",
+  "name": "Pizzas Especiais",
+  "createdAt": "2025-11-12T10:30:00.000Z",
+  "updatedAt": "2025-11-12T11:00:00.000Z"
+}
+```
+
+**Respostas de Erro:**
+
+```json
+// 404 - Categoria não encontrada
+{
+  "error": "Categoria nao encontrada"
+}
+
+// 409 - Categoria já cadastrada
+{
+  "error": "Categoria ja cadastrada"
+}
+
+// 500 - Erro ao atualizar categoria
+{
+  "error": "Erro ao atualizar categoria"
+}
+```
+
+**Observações:**
+
+- Se o nome informado for igual ao nome atual, nenhuma alteração é feita
+
+---
+
 ## 🍕 Produtos
 
 ### 1. Criar Produto
@@ -526,7 +598,7 @@ Cria um novo produto com upload de imagem.
 
 **Autenticação:** ✅ Requerida
 
-**Permissão:** Apenas ADMIN
+**Permissão:** ADMIN ou MASTER
 
 **Headers:**
 
@@ -617,7 +689,7 @@ Lista todos os produtos com filtro de status.
 
 **Autenticação:** ✅ Requerida
 
-**Permissão:** STAFF ou ADMIN
+**Permissão:** STAFF, ADMIN ou MASTER
 
 **Headers:**
 
@@ -690,7 +762,7 @@ Desativa um produto (soft delete).
 
 **Autenticação:** ✅ Requerida
 
-**Permissão:** Apenas ADMIN
+**Permissão:** ADMIN ou MASTER
 
 **Headers:**
 
@@ -739,7 +811,89 @@ DELETE /product?productId=770e8400-e29b-41d4-a716-446655440001
 
 ---
 
-### 4. Listar Produtos por Categoria
+### 4. Atualizar Produto
+
+Atualiza dados de um produto (nome, descricao, preco e banner).
+
+**Endpoint:** `PUT /product/update`
+
+**Autenticação:** ✅ Requerida
+
+**Permissão:** ADMIN ou MASTER
+
+**Headers:**
+
+```
+Authorization: Bearer SEU_TOKEN_JWT
+Content-Type: multipart/form-data
+```
+
+**Query Parameters:**
+
+```
+productId: "770e8400-e29b-41d4-a716-446655440001"
+```
+
+**Body (FormData):**
+
+```
+name: "Pizza Margherita"
+price: "3500"
+description: "Molho de tomate, mussarela e manjericão"
+file: [arquivo de imagem] (opcional)
+```
+
+**Validações:**
+
+- `productId`: String não vazia (obrigatório)
+- `name`: Mínimo 1 caractere (obrigatório)
+- `price`: String não vazia (obrigatório) - Valor em centavos
+- `description`: Mínimo 1 caractere (obrigatório)
+- `file`: Imagem opcional (JPEG, JPG, PNG - máx 4MB)
+
+**Resposta de Sucesso (200):**
+
+```json
+{
+  "id": "770e8400-e29b-41d4-a716-446655440001",
+  "name": "Pizza Margherita",
+  "price": 3500,
+  "description": "Molho de tomate, mussarela e manjericão",
+  "banner": "https://res.cloudinary.com/seu-cloud/image/upload/v1699792800/products/1699792800-margherita.jpg",
+  "categoryId": "660e8400-e29b-41d4-a716-446655440001",
+  "createdAt": "2025-11-12T10:30:00.000Z",
+  "updatedAt": "2025-11-12T11:00:00.000Z"
+}
+```
+
+**Respostas de Erro:**
+
+```json
+// 404 - Produto não encontrado
+{
+  "error": "Produto não encontrado"
+}
+
+// 500 - Erro ao atualizar produto
+{
+  "error": "Erro ao atualizar produto"
+}
+
+// 500 - Erro no upload
+{
+  "error": "Erro ao enviar imagem do produto"
+}
+```
+
+**Observações:**
+
+- Se `name`, `description` e `price` forem iguais e não houver novo `file`,
+  nenhuma alteração é feita
+- Preço é em centavos (ex: 3500 = R$ 35,00)
+
+---
+
+### 5. Listar Produtos por Categoria
 
 Lista produtos de uma categoria específica (apenas ativos).
 
@@ -747,7 +901,7 @@ Lista produtos de uma categoria específica (apenas ativos).
 
 **Autenticação:** ✅ Requerida
 
-**Permissão:** STAFF ou ADMIN
+**Permissão:** STAFF, ADMIN ou MASTER
 
 **Headers:**
 
@@ -842,7 +996,7 @@ Cria um novo pedido (inicialmente como rascunho).
 
 **Autenticação:** ✅ Requerida
 
-**Permissão:** STAFF ou ADMIN
+**Permissão:** STAFF, ADMIN ou MASTER
 
 **Headers:**
 
@@ -912,7 +1066,7 @@ Adiciona um produto a um pedido existente.
 
 **Autenticação:** ✅ Requerida
 
-**Permissão:** STAFF ou ADMIN
+**Permissão:** STAFF, ADMIN ou MASTER
 
 **Headers:**
 
@@ -994,7 +1148,7 @@ Remove um item específico de um pedido.
 
 **Autenticação:** ✅ Requerida
 
-**Permissão:** STAFF ou ADMIN
+**Permissão:** STAFF, ADMIN ou MASTER
 
 **Headers:**
 
@@ -1054,7 +1208,7 @@ Envia o pedido para a cozinha (sai do modo rascunho).
 
 **Autenticação:** ✅ Requerida
 
-**Permissão:** STAFF ou ADMIN
+**Permissão:** STAFF, ADMIN ou MASTER
 
 **Headers:**
 
@@ -1123,7 +1277,7 @@ Marca um pedido como finalizado.
 
 **Autenticação:** ✅ Requerida
 
-**Permissão:** STAFF ou ADMIN
+**Permissão:** STAFF, ADMIN ou MASTER
 
 **Headers:**
 
@@ -1189,7 +1343,7 @@ Lista pedidos com filtro de rascunho.
 
 **Autenticação:** ✅ Requerida
 
-**Permissão:** STAFF ou ADMIN
+**Permissão:** STAFF, ADMIN ou MASTER
 
 **Headers:**
 
@@ -1286,7 +1440,7 @@ Busca informações completas de um pedido específico.
 
 **Autenticação:** ✅ Requerida
 
-**Permissão:** STAFF ou ADMIN
+**Permissão:** STAFF, ADMIN ou MASTER
 
 **Headers:**
 
@@ -1379,7 +1533,7 @@ Deleta permanentemente um pedido e todos seus itens.
 
 **Autenticação:** ✅ Requerida
 
-**Permissão:** STAFF ou ADMIN
+**Permissão:** STAFF, ADMIN ou MASTER
 
 **Headers:**
 
@@ -1436,28 +1590,30 @@ DELETE /order?orderId=880e8400-e29b-41d4-a716-446655440001
 
 ### Todos os Endpoints
 
-| Método | Rota              | Autenticação | Permissão   | Descrição                           |
-| ------ | ----------------- | ------------ | ----------- | ----------------------------------- |
-| POST   | /users            | ❌           | Pública     | Criar novo usuário                  |
-| POST   | /session          | ❌           | Pública     | Autenticar usuário (login)          |
-| GET    | /me               | ✅           | STAFF/ADMIN | Obter dados do usuário logado       |
-| GET    | /users            | ✅           | ADMIN       | Listar usuários                     |
-| PUT    | /users/role       | ✅           | ADMIN       | Atualizar role do usuário           |
-| POST   | /category         | ✅           | ADMIN       | Criar nova categoria                |
-| GET    | /category         | ✅           | STAFF/ADMIN | Listar todas as categorias          |
-| DELETE | /category/remove  | ✅           | ADMIN       | Desativar categoria                 |
-| POST   | /product          | ✅           | ADMIN       | Criar novo produto (com imagem)     |
-| GET    | /product          | ✅           | STAFF/ADMIN | Listar produtos (filtro por status) |
-| DELETE | /product          | ✅           | ADMIN       | Desativar produto (soft delete)     |
-| GET    | /category/product | ✅           | STAFF/ADMIN | Listar produtos de uma categoria    |
-| POST   | /order            | ✅           | STAFF/ADMIN | Criar novo pedido                   |
-| POST   | /order/add        | ✅           | STAFF/ADMIN | Adicionar item ao pedido            |
-| DELETE | /order/remove     | ✅           | STAFF/ADMIN | Remover item do pedido              |
-| PUT    | /order/send       | ✅           | STAFF/ADMIN | Enviar pedido (confirmar)           |
-| PUT    | /order/finish     | ✅           | STAFF/ADMIN | Finalizar pedido                    |
-| GET    | /orders           | ✅           | STAFF/ADMIN | Listar pedidos (filtro por draft)   |
-| GET    | /order/detail     | ✅           | STAFF/ADMIN | Detalhes de um pedido específico    |
-| DELETE | /order            | ✅           | STAFF/ADMIN | Deletar pedido                      |
+| Método | Rota              | Autenticação | Permissão         | Descrição                           |
+| ------ | ----------------- | ------------ | ----------------- | ----------------------------------- |
+| POST   | /users            | ❌           | Pública           | Criar novo usuário                  |
+| POST   | /session          | ❌           | Pública           | Autenticar usuário (login)          |
+| GET    | /me               | ✅           | STAFF/ADMIN/MASTER | Obter dados do usuário logado       |
+| GET    | /users            | ✅           | ADMIN/MASTER      | Listar usuários                     |
+| PUT    | /users/role       | ✅           | MASTER            | Atualizar role do usuário           |
+| POST   | /category         | ✅           | ADMIN/MASTER      | Criar nova categoria                |
+| GET    | /category         | ✅           | STAFF/ADMIN/MASTER | Listar todas as categorias          |
+| DELETE | /category/remove  | ✅           | ADMIN/MASTER      | Desativar categoria                 |
+| PUT    | /category/update  | ✅           | ADMIN/MASTER      | Atualizar nome da categoria         |
+| POST   | /product          | ✅           | ADMIN/MASTER      | Criar novo produto (com imagem)     |
+| GET    | /product          | ✅           | STAFF/ADMIN/MASTER | Listar produtos (filtro por status) |
+| DELETE | /product          | ✅           | ADMIN/MASTER      | Desativar produto (soft delete)     |
+| PUT    | /product/update   | ✅           | ADMIN/MASTER      | Atualizar produto                   |
+| GET    | /category/product | ✅           | STAFF/ADMIN/MASTER | Listar produtos de uma categoria    |
+| POST   | /order            | ✅           | STAFF/ADMIN/MASTER | Criar novo pedido                   |
+| POST   | /order/add        | ✅           | STAFF/ADMIN/MASTER | Adicionar item ao pedido            |
+| DELETE | /order/remove     | ✅           | STAFF/ADMIN/MASTER | Remover item do pedido              |
+| PUT    | /order/send       | ✅           | STAFF/ADMIN/MASTER | Enviar pedido (confirmar)           |
+| PUT    | /order/finish     | ✅           | STAFF/ADMIN/MASTER | Finalizar pedido                    |
+| GET    | /orders           | ✅           | STAFF/ADMIN/MASTER | Listar pedidos (filtro por draft)   |
+| GET    | /order/detail     | ✅           | STAFF/ADMIN/MASTER | Detalhes de um pedido específico    |
+| DELETE | /order            | ✅           | STAFF/ADMIN/MASTER | Deletar pedido                      |
 
 ---
 
