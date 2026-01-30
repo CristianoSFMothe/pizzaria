@@ -19,9 +19,11 @@ import { isMaster } from "./middlewares/isMaster";
 import {
   createCategorySchema,
   removeCategorySchema,
+  updateCategorySchema,
 } from "./schemas/categorySchema";
 import { ListCategoryController } from "./controllers/category/ListCategoryController";
 import { RemoveCategoryController } from "./controllers/category/RemoveCategoryController";
+import { UpdateCategoryController } from "./controllers/category/UpdateCategoryController";
 import { CreateProductController } from "./controllers/product/CreateProductController";
 import { ListProductController } from "./controllers/product/ListProductController";
 import { ListProductByCategoryController } from "./controllers/product/ListProductByCategoryController";
@@ -98,6 +100,14 @@ router.delete(
   isAdminOrMaster,
   validateSchema(removeCategorySchema),
   new RemoveCategoryController().handle,
+);
+
+router.put(
+  "/category/update",
+  isAuthenticated,
+  isAdminOrMaster,
+  validateSchema(updateCategorySchema),
+  new UpdateCategoryController().handle,
 );
 
 // Product by Category route
