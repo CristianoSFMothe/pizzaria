@@ -201,6 +201,154 @@ Authorization: Bearer SEU_TOKEN_JWT
 
 ---
 
+### 4. Atualizar Role do Usuário
+
+Atualiza a role de um usuário STAFF para ADMIN.
+
+**Endpoint:** `PUT /users/role`
+
+**Autenticação:** ✅ Requerida
+
+**Permissão:** Apenas ADMIN
+
+**Headers:**
+
+```
+Authorization: Bearer SEU_TOKEN_JWT
+Content-Type: application/json
+```
+
+**Body:**
+
+```json
+{
+  "userId": "550e8400-e29b-41d4-a716-446655440000"
+}
+```
+
+**Validações:**
+
+- `userId`: String não vazia (obrigatório)
+
+**Resposta de Sucesso (200):**
+
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "name": "João Silva",
+  "email": "joao@example.com",
+  "role": "ADMIN",
+  "createdAt": "2025-11-12T10:30:00.000Z"
+}
+```
+
+**Respostas de Erro:**
+
+```json
+// 401 - Não autenticado
+{
+  "error": "Usuário não autenticado"
+}
+
+// 401 - Sem permissão
+{
+  "error": "Usuário não ter permissão"
+}
+
+// 404 - Usuário não encontrado
+{
+  "error": "Usuário não encontrado"
+}
+
+// 400 - Usuário já é ADMIN
+{
+  "error": "Usuário já é ADMIN"
+}
+
+// 500 - Erro ao atualizar role
+{
+  "error": "Erro ao atualizar role do usuário"
+}
+
+// 400 - Validação falhou
+{
+  "error": "Erro validação",
+  "details": [
+    { "message": "O ID do usuário é obrigatório" }
+  ]
+}
+```
+
+**Observações:**
+
+- Apenas usuários com role `ADMIN` podem atualizar
+- Somente usuários com role `STAFF` são promovidos
+
+---
+
+### 5. Listar Usuários
+
+Lista todos os usuários cadastrados.
+
+**Endpoint:** `GET /users`
+
+**Autenticação:** ✅ Requerida
+
+**Permissão:** Apenas ADMIN
+
+**Headers:**
+
+```
+Authorization: Bearer SEU_TOKEN_JWT
+```
+
+**Resposta de Sucesso (200):**
+
+```json
+[
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "name": "João Silva",
+    "email": "joao@example.com",
+    "role": "STAFF",
+    "createdAt": "2025-11-12T10:30:00.000Z"
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440001",
+    "name": "Maria Souza",
+    "email": "maria@example.com",
+    "role": "ADMIN",
+    "createdAt": "2025-11-12T10:35:00.000Z"
+  }
+]
+```
+
+**Respostas de Erro:**
+
+```json
+// 401 - Não autenticado
+{
+  "error": "Usuário não autenticado"
+}
+
+// 401 - Sem permissão
+{
+  "error": "Usuário não ter permissão"
+}
+
+// 500 - Erro ao listar usuários
+{
+  "error": "Erro ao listar usuários"
+}
+```
+
+**Observações:**
+
+- Retorna apenas: `id`, `name`, `email`, `role` e `createdAt`
+- Ordena por `name` em ordem decrescente
+
+---
+
 ## 📂 Categorias
 
 ### 1. Criar Categoria
@@ -1293,6 +1441,8 @@ DELETE /order?orderId=880e8400-e29b-41d4-a716-446655440001
 | POST   | /users            | ❌           | Pública     | Criar novo usuário                  |
 | POST   | /session          | ❌           | Pública     | Autenticar usuário (login)          |
 | GET    | /me               | ✅           | STAFF/ADMIN | Obter dados do usuário logado       |
+| GET    | /users            | ✅           | ADMIN       | Listar usuários                     |
+| PUT    | /users/role       | ✅           | ADMIN       | Atualizar role do usuário           |
 | POST   | /category         | ✅           | ADMIN       | Criar nova categoria                |
 | GET    | /category         | ✅           | STAFF/ADMIN | Listar todas as categorias          |
 | DELETE | /category/remove  | ✅           | ADMIN       | Desativar categoria                 |

@@ -41,6 +41,8 @@ em memoria e integracao com Cloudinary para imagens de produtos.
 | POST   | /users            | Cria usuario                      |
 | POST   | /session          | Autentica usuario                 |
 | GET    | /me               | Detalhe do usuario                |
+| GET    | /users            | Lista usuarios                    |
+| PUT    | /users/role       | Atualiza role do usuario          |
 | GET    | /category         | Lista categorias                  |
 | POST   | /category         | Cria categoria                    |
 | DELETE | /category/remove  | Desativa categoria                |
