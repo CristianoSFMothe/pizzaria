@@ -10,7 +10,10 @@
     "test:create-user-controller": "jest tests/controllers/user/CreateUserController.test.ts",
     "test:create-user-service": "jest tests/services/user/CreateUserService.test.ts",
     "test:auth-user-controller": "jest tests/controllers/user/AuthUserController.test.ts",
-    "test:auth-user-service": "jest tests/services/user/AuthUserService.test.ts"
+    "test:auth-user-service": "jest tests/services/user/AuthUserService.test.ts",
+    "test:detail-user-controller": "jest tests/controllers/user/DetailsUserController.test.ts",
+    "test:detail-user-service": "jest tests/services/user/DetailsUserService.test.ts",
+    "test:detail-order-service": "jest tests/services/order/DetailOrderService.test.ts"
   },
   "keywords": [],
   "author": "",

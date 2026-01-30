@@ -31,7 +31,7 @@ describe("CreateUserService", () => {
     (hash as jest.Mock).mockReset();
   });
 
-  it("You must register a user when the email address does not exist.", async () => {
+  it("you must register a user when the email address does not exist.", async () => {
     prismaMock.user.findFirst.mockResolvedValue(null);
     (hash as jest.Mock).mockResolvedValue("hashed-password");
 
@@ -65,7 +65,7 @@ describe("CreateUserService", () => {
     );
   });
 
-  it("It should fail when the email is already registered.", async () => {
+  it("should fail when the email is already registered.", async () => {
     prismaMock.user.findFirst.mockResolvedValue({ id: "user-id" });
 
     const service = new CreateUserService();

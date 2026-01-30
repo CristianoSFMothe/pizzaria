@@ -1,5 +1,5 @@
-import { CreateUserController } from "../../../src/controllers/user/CreateUserController";
-import { CreateUserService } from "../../../src/services/user/CreateUserService";
+import { DetailsUserController } from "../../../src/controllers/user/DetailsUserController";
+import { DetailsUserService } from "../../../src/services/user/DetailsUserService";
 import type { Request, Response } from "express";
 
 const userResponse = {
@@ -10,12 +10,12 @@ const userResponse = {
   createdAt: new Date("2025-01-01T00:00:00.000Z"),
 };
 
-describe("CreateUserController", () => {
+describe("DetailsUserController", () => {
   let executeSpy: jest.SpyInstance;
 
   beforeEach(() => {
     executeSpy = jest
-      .spyOn(CreateUserService.prototype, "execute")
+      .spyOn(DetailsUserService.prototype, "execute")
       .mockResolvedValue(userResponse as any);
   });
 
@@ -23,16 +23,12 @@ describe("CreateUserController", () => {
     jest.restoreAllMocks();
   });
 
-  it("should return 201 with the user's data.", async () => {
-    const controller = new CreateUserController();
+  it("should return 200 with the user's data.", async () => {
+    const controller = new DetailsUserController();
 
     const req = {
-      body: {
-        name: "João",
-        email: "joao@example.com",
-        password: "123456",
-      },
-    } as Request;
+      userId: "user-id",
+    } as unknown as Request;
 
     const res = {
       status: jest.fn().mockReturnThis(),
@@ -41,27 +37,19 @@ describe("CreateUserController", () => {
 
     await controller.handle(req, res);
 
-    expect(executeSpy).toHaveBeenCalledWith({
-      name: "João",
-      email: "joao@example.com",
-      password: "123456",
-    });
-    expect(res.status).toHaveBeenCalledWith(201);
+    expect(executeSpy).toHaveBeenCalledWith("user-id");
+    expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith(userResponse);
   });
 
   it("should propagate service error", async () => {
     executeSpy.mockRejectedValueOnce(new Error("Falha"));
 
-    const controller = new CreateUserController();
+    const controller = new DetailsUserController();
 
     const req = {
-      body: {
-        name: "João",
-        email: "joao@example.com",
-        password: "123456",
-      },
-    } as Request;
+      userId: "user-id",
+    } as unknown as Request;
 
     const res = {
       status: jest.fn().mockReturnThis(),

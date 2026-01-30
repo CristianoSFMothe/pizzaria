@@ -73,7 +73,7 @@ describe("AuthUserService", () => {
     );
   });
 
-  it("It should fail when the email address does not exist.", async () => {
+  it("should fail when the email address does not exist.", async () => {
     prismaMock.user.findFirst.mockResolvedValue(null);
 
     const service = new AuthUserService();
@@ -91,7 +91,7 @@ describe("AuthUserService", () => {
     expect(sign).not.toHaveBeenCalled();
   });
 
-  it("It should fail when the password is invalid.", async () => {
+  it("should fail when the password is invalid.", async () => {
     prismaMock.user.findFirst.mockResolvedValue({
       id: "user-id",
       name: "João",
