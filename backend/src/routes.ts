@@ -32,8 +32,10 @@ import {
   createProductSchema,
   listProductByCategorySchema,
   listProductSchema,
+  updateProductSchema,
 } from "./schemas/productSchema";
 import { DeleteProductController } from "./controllers/product/DeleteProductController";
+import { UpdateProductController } from "./controllers/product/UpdateProductController";
 import {
   addItemSchema,
   createOrderSchema,
@@ -192,6 +194,15 @@ router.delete(
   isAuthenticated,
   isAdminOrMaster,
   new DeleteProductController().handle,
+);
+
+router.put(
+  "/product/update",
+  isAuthenticated,
+  isAdminOrMaster,
+  upload.single("file"),
+  validateSchema(updateProductSchema),
+  new UpdateProductController().handle,
 );
 
 export { router };
