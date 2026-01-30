@@ -51,9 +51,9 @@ const CategoryForm = () => {
       setIsOpen(false);
       router.refresh();
       return;
-    } else {
-      console.log(actionResult.error);
     }
+
+    toast.error(actionResult.error || "Erro ao criar categoria");
   };
 
   const handleFieldChange = () => {

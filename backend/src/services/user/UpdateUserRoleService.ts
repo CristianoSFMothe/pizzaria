@@ -22,8 +22,13 @@ class UpdateUserRoleService {
         throw new AppError("Usuário não encontrado", 404);
       }
 
-      if (user.role !== "STAFF") {
-        throw new AppError("Usuário já é ADMIN", 400);
+      let nextRole: "ADMIN" | "STAFF";
+      if (user.role === "STAFF") {
+        nextRole = "ADMIN";
+      } else if (user.role === "ADMIN") {
+        nextRole = "STAFF";
+      } else {
+        throw new AppError("Role do usuário inválida", 400);
       }
 
       const updatedUser = await prismaClient.user.update({
@@ -31,7 +36,7 @@ class UpdateUserRoleService {
           id: userId,
         },
         data: {
-          role: "ADMIN",
+          role: nextRole,
         },
         select: {
           id: true,

@@ -14,13 +14,16 @@ import { UpdateUserRoleController } from "./controllers/user/UpdateUserRoleContr
 import { ListUsersController } from "./controllers/user/ListUsersController";
 import { isAuthenticated } from "./middlewares/isAuthenticated";
 import { CreateCategoryController } from "./controllers/category/CreateCategoryController";
-import { isAdmin } from "./middlewares/isAdmin";
+import { isAdminOrMaster } from "./middlewares/isAdminOrMaster";
+import { isMaster } from "./middlewares/isMaster";
 import {
   createCategorySchema,
   removeCategorySchema,
+  updateCategorySchema,
 } from "./schemas/categorySchema";
 import { ListCategoryController } from "./controllers/category/ListCategoryController";
 import { RemoveCategoryController } from "./controllers/category/RemoveCategoryController";
+import { UpdateCategoryController } from "./controllers/category/UpdateCategoryController";
 import { CreateProductController } from "./controllers/product/CreateProductController";
 import { ListProductController } from "./controllers/product/ListProductController";
 import { ListProductByCategoryController } from "./controllers/product/ListProductByCategoryController";
@@ -29,8 +32,10 @@ import {
   createProductSchema,
   listProductByCategorySchema,
   listProductSchema,
+  updateProductSchema,
 } from "./schemas/productSchema";
 import { DeleteProductController } from "./controllers/product/DeleteProductController";
+import { UpdateProductController } from "./controllers/product/UpdateProductController";
 import {
   addItemSchema,
   createOrderSchema,
@@ -68,14 +73,14 @@ router.get("/me", isAuthenticated, new DetailsUserController().handle);
 router.get(
   "/users",
   isAuthenticated,
-  isAdmin,
+  isAdminOrMaster,
   new ListUsersController().handle,
 );
 
 router.put(
   "/users/role",
   isAuthenticated,
-  isAdmin,
+  isMaster,
   validateSchema(updateUserRoleSchema),
   new UpdateUserRoleController().handle,
 );
@@ -86,7 +91,7 @@ router.get("/category", isAuthenticated, new ListCategoryController().handle);
 router.post(
   "/category",
   isAuthenticated,
-  isAdmin,
+  isAdminOrMaster,
   validateSchema(createCategorySchema),
   new CreateCategoryController().handle,
 );
@@ -94,9 +99,17 @@ router.post(
 router.delete(
   "/category/remove",
   isAuthenticated,
-  isAdmin,
+  isAdminOrMaster,
   validateSchema(removeCategorySchema),
   new RemoveCategoryController().handle,
+);
+
+router.put(
+  "/category/update",
+  isAuthenticated,
+  isAdminOrMaster,
+  validateSchema(updateCategorySchema),
+  new UpdateCategoryController().handle,
 );
 
 // Product by Category route
@@ -163,7 +176,7 @@ router.delete(
 router.post(
   "/product",
   isAuthenticated,
-  isAdmin,
+  isAdminOrMaster,
   upload.single("file"),
   validateSchema(createProductSchema),
   new CreateProductController().handle,
@@ -179,8 +192,17 @@ router.get(
 router.delete(
   "/product",
   isAuthenticated,
-  isAdmin,
+  isAdminOrMaster,
   new DeleteProductController().handle,
+);
+
+router.put(
+  "/product/update",
+  isAuthenticated,
+  isAdminOrMaster,
+  upload.single("file"),
+  validateSchema(updateProductSchema),
+  new UpdateProductController().handle,
 );
 
 export { router };

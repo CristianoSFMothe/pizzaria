@@ -65,6 +65,40 @@ describe("UpdateUserRoleService", () => {
     );
   });
 
+  it("should update role to STAFF when user is ADMIN.", async () => {
+    const userResponse = {
+      id: "user-id",
+      name: "João",
+      email: "joao@example.com",
+      role: "STAFF",
+      createdAt: new Date("2025-01-01T00:00:00.000Z"),
+    };
+
+    prismaMock.user.findFirst.mockResolvedValue({
+      id: "user-id",
+      role: "ADMIN",
+    });
+    prismaMock.user.update.mockResolvedValue(userResponse);
+
+    const service = new UpdateUserRoleService();
+    const result = await service.execute({ userId: "user-id" });
+
+    expect(result).toEqual(userResponse);
+    expect(prismaMock.user.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: "user-id" },
+        data: { role: "STAFF" },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          createdAt: true,
+        },
+      }),
+    );
+  });
+
   it("should fail when the user does not exist.", async () => {
     prismaMock.user.findFirst.mockResolvedValue(null);
 
@@ -79,10 +113,10 @@ describe("UpdateUserRoleService", () => {
     expect(prismaMock.user.update).not.toHaveBeenCalled();
   });
 
-  it("should fail when the user is already ADMIN.", async () => {
+  it("should fail when the user role is invalid.", async () => {
     prismaMock.user.findFirst.mockResolvedValue({
       id: "user-id",
-      role: "ADMIN",
+      role: "MASTER",
     });
 
     const service = new UpdateUserRoleService();
@@ -90,7 +124,7 @@ describe("UpdateUserRoleService", () => {
 
     await expect(promise).rejects.toBeInstanceOf(AppError);
     await expect(promise).rejects.toMatchObject({
-      message: "Usuário já é ADMIN",
+      message: "Role do usuário inválida",
       statusCode: 400,
     });
     expect(prismaMock.user.update).not.toHaveBeenCalled();

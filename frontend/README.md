@@ -1,36 +1,106 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Sistema de Pizzaria - Frontend
 
-## Getting Started
+![Next.js](https://img.shields.io/badge/next.js-16.x-000000?logo=nextdotjs&logoColor=white)
+![React](https://img.shields.io/badge/react-19.x-61DAFB?logo=react&logoColor=000000)
+![TypeScript](https://img.shields.io/badge/typescript-5.x-3178C6?logo=typescript&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/tailwindcss-4.x-38B2AC?logo=tailwindcss&logoColor=white)
+![shadcn/ui](https://img.shields.io/badge/shadcn%2Fui-UI-111827?logo=shadcnui&logoColor=white)
 
-First, run the development server:
+Frontend em Next.js (App Router) com React e TypeScript. A aplicação consome a
+API do sistema de pizzaria, oferece autenticação via cookie httpOnly e permite
+gerenciar pedidos, categorias e produtos. A camada de UI utiliza Tailwind CSS,
+componentes shadcn/ui.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Tecnologias utilizadas
+
+- Next.js
+- React
+- TypeScript
+- Tailwind CSS
+- shadcn/ui
+- Zod (validações de formulários)
+- Lucide React (ícones)
+- ESLint / Prettier
+
+## Versão do Node
+
+- Recomendado: Node.js 20 LTS
+
+## Principais paginas e fluxos
+
+| Rota                  | Descricao                        |
+| --------------------- | -------------------------------- |
+| /login                | Login de usuários                |
+| /register             | Cadastro de usuários             |
+| /dashboard            | Lista e gestão de pedidos        |
+| /dashboard/categories | Listagem e criação de categorias |
+| /dashboard/products   | Listagem e criação de produtos   |
+| /access-denied        | Aviso de acesso negado           |
+
+## Integração com a API
+
+A aplicação consome o backend via `NEXT_PUBLIC_API_URL` e utiliza os endpoints:
+
+- POST /users (cadastro)
+- POST /session (login)
+- GET /me (dados do usuário)
+- GET /orders?draft=false (pedidos em produção)
+- PUT /order/finish (finalizar pedido)
+- GET /category (listar categorias)
+- POST /category (criar categoria)
+- POST /product (criar produto)
+- DELETE /product (desativar produto)
+
+## Variáveis de ambiente
+
+Crie um arquivo `.env.local` na raiz do projeto:
+
+```
+NEXT_PUBLIC_API_URL=http://localhost:3333
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Observação: também e aceito `API_URL`, mas o recomendado no frontend e
+`NEXT_PUBLIC_API_URL`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Comando para instalar dependências
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm install
+```
 
-## Learn More
+## Comandos para executar
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run dev     # desenvolvimento
+npm run build   # build de produção
+npm run start   # servidor de produção
+npm run lint    # lint
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Testes
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Nao ha suite de testes configurada no momento.
 
-## Deploy on Vercel
+## Como clonar o projeto e colaborar
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. Faca um fork do repositório.
+2. Clone o projeto:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+git clone <URL_DO_REPOSITORIO>
+```
+
+3. Crie uma branch:
+
+```bash
+git checkout -b feat/minha-alteracao
+```
+
+4. Envie suas alterações e abra um Pull Request.
+
+## Autor
+
+- Cristiano da Silva Ferreira
+- GitHub: https://github.com/CristianoSFMothe
+- Portfolio: https://portfolio-qa-cristiano.vercel.app/
+- LinkedIn: https://www.linkedin.com/in/cristiano-da-silva-ferreira/

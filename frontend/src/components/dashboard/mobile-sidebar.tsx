@@ -1,7 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import { ShoppingCart, Package, Tags, LogOut, Menu } from "lucide-react";
+import { ShoppingCart, Package, Tags, LogOut, Menu, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "../ui/button";
@@ -20,6 +20,7 @@ const menuItems = [
   { title: "Pedidos", href: "/dashboard", icon: ShoppingCart },
   { title: "Produtos", href: "/dashboard/products", icon: Package },
   { title: "Categorias", href: "/dashboard/categories", icon: Tags },
+  { title: "Usuários", href: "/dashboard/users", icon: Users },
 ];
 
 const MobileSidebar = () => {
