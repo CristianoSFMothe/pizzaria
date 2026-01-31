@@ -18,6 +18,7 @@ import { categorySchema } from "@/lib/validations/category";
 import { updateCategoryAction } from "@/actions/categories";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface UpdateCategoryModalProps {
   category: Categories;
@@ -79,14 +80,21 @@ const UpdateCategoryModal = ({ category }: UpdateCategoryModalProps) => {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button
-          type="button"
-          size="icon"
-          variant="secondary"
-          aria-label={`Editar categoria ${category.name}`}
-        >
-          <Pencil className="h-4 w-4" />
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              type="button"
+              size="icon"
+              variant="secondary"
+              aria-label={`Editar categoria ${category.name}`}
+            >
+              <Pencil className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="top" sideOffset={6}>
+            Editar categoria
+          </TooltipContent>
+        </Tooltip>
       </DialogTrigger>
 
       <DialogContent className="bg-app-card p-6 text-white">

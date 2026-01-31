@@ -24,6 +24,7 @@ import {
   updateProductSchema,
 } from "@/lib/validations/product";
 import { toast } from "sonner";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface UpdateProductModalProps {
   product: Product;
@@ -209,14 +210,21 @@ const UpdateProductModal = ({ product }: UpdateProductModalProps) => {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button
-          type="button"
-          size="icon"
-          variant="secondary"
-          aria-label="Editar produto"
-        >
-          <Pencil className="h-4 w-4" />
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              type="button"
+              size="icon"
+              variant="secondary"
+              aria-label="Editar produto"
+            >
+              <Pencil className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="top" sideOffset={6}>
+            Editar produto
+          </TooltipContent>
+        </Tooltip>
       </DialogTrigger>
 
       <DialogContent className="bg-app-card max-h-[90vh] overflow-x-hidden overflow-y-auto p-6 text-white">
