@@ -1,199 +1,164 @@
-# Documentação detalhada do back-end - Sistema de Pizzaria
+# Documentação detalhada do front-end - Sistema de Pizzaria
 
 ## 1) Visão geral
-Backend REST em Node.js/TypeScript com Express 5. A aplicação segue arquitetura em camadas (Rotas -> Middlewares -> Controllers -> Services -> Prisma) e utiliza PostgreSQL via Prisma ORM. A API fornece autenticação JWT, autorização por roles (MASTER/ADMIN/STAFF) e validação de entrada com Zod. Upload de imagens é feito via Multer (memoryStorage) com envio para Cloudinary.
+
+Frontend administrativo em Next.js (App Router) focado na operação diária da
+pizzaria. Permite autenticação de usuários, gestão de pedidos em produção,
+categorias, produtos e usuários (apenas MASTER). A experiência é enriquecida
+com animações via Framer Motion e feedbacks com Sonner.
 
 ## 2) Stack principal
-- **Node.js 20 LTS**
-- **TypeScript**
-- **Express 5**
-- **Prisma ORM** + **PostgreSQL**
-- **Zod** (validação)
-- **JWT** (auth)
-- **bcryptjs** (hash de senha)
-- **Multer** (upload multipart)
-- **Cloudinary** (armazenamento de imagens)
-- **Jest + ts-jest** (testes)
-- **Swagger UI/OpenAPI**
 
-## 3) Arquitetura e fluxo de requisição
+- **Next.js 16** (App Router)
+- **React 19**
+- **TypeScript 5**
+- **Tailwind CSS 4** + **shadcn/ui**
+- **Framer Motion** (animações)
+- **Zod** (validação de formulários)
+- **Sonner** (toasts)
+- **Lucide React** (ícones)
+- **next-themes** (tema do toaster)
 
-Fluxo padrão:
+## 3) Arquitetura e fluxo
+
+### App Router
+- Rotas em `src/app`.
+- Server Components por padrão.
+- Client Components onde há interatividade (tabelas, formulários, toasts,
+  animações, atualização sem recarregar).
+
+### Camadas principais
+- **Pages/Layouts**: definem as rotas e guardas de acesso.
+- **Components**: UI e interações (modal, tabela, cards).
+- **Actions** (`src/actions`): Server Actions para mutações com
+  `revalidatePath`.
+- **Lib** (`src/lib`): auth, api client, tipos, utilidades e validações.
+
+### Guardas de acesso
+- `src/app/dashboard/layout.tsx` usa `requiredAdmin()`.
+- `src/app/dashboard/users/page.tsx` usa `requiredMaster()`.
+- Redireciona para `/login` ou `/access-denied` quando necessário.
+
+## 4) Estrutura de pastas
 
 ```
-HTTP -> Rotas -> Middlewares -> Controller -> Service -> Prisma -> Banco
-                                    -> Controller -> Resposta
+src/
+├── actions/                 # server actions (auth, categories, products, orders, users)
+├── app/                     # rotas (App Router)
+│   ├── dashboard/
+│   │   ├── page.tsx         # pedidos
+│   │   ├── products/        # produtos
+│   │   ├── categories/      # categorias
+│   │   └── users/           # usuários (MASTER)
+│   └── login, register, access-denied
+├── components/
+│   ├── dashboard/           # cards, tabelas, modais e forms
+│   └── ui/                  # shadcn/ui + Sonner
+└── lib/                     # auth, api, types, format, validations
 ```
 
-Responsabilidades:
-- **Rotas**: definem endpoints e encadeiam middlewares.
-- **Middlewares**: autenticação, autorização e validação.
-- **Controllers**: extraem dados da requisição e chamam Services.
-- **Services**: regras de negócio e persistência.
-- **Prisma**: acesso ao banco PostgreSQL.
+## 5) Rotas e permissões
 
-## 4) Autenticação e autorização
+| Rota                  | Acesso       | Descrição                    |
+| --------------------- | ------------ | ---------------------------- |
+| /login                | Público      | Login de usuários            |
+| /register             | Público      | Cadastro de usuários         |
+| /dashboard            | ADMIN/MASTER | Pedidos em produção          |
+| /dashboard/categories | ADMIN/MASTER | Gestão de categorias         |
+| /dashboard/products   | ADMIN/MASTER | Gestão de produtos           |
+| /dashboard/users      | MASTER       | Gestão de usuários           |
+| /access-denied        | Público      | Aviso de acesso negado       |
 
-### JWT
-- Header esperado: `Authorization: Bearer <token>`
-- Token inclui `sub = user.id`.
-- Expira em 30 dias.
-- Secret: `JWT_SECRETE`.
+## 6) Autenticação e sessão
 
-### Roles
-- **STAFF**: acesso básico às rotas autenticadas.
-- **ADMIN**: acesso administrativo (produtos e categorias).
-- **MASTER**: acesso total e rotas exclusivas (ex: alterar role).
+- Token armazenado em cookie httpOnly `token_pizzaria`.
+- `loginAction` faz login e chama `setToken`.
+- `logoutAction` remove o cookie.
+- `requiredAdmin` e `requiredMaster` garantem acesso no server.
 
-### Middlewares
-- `isAuthenticated`: valida JWT e injeta `req.userId`.
-- `isAdminOrMaster`: exige role `ADMIN` ou `MASTER`.
-- `isMaster`: exige role `MASTER`.
+## 7) Integração com a API
 
-## 5) Validação de entrada (Zod)
+### Cliente HTTP
+- `src/lib/api.ts` encapsula `fetch` e injeta `Authorization` quando há token.
+- Aceita `cache: "no-store"` para evitar dados antigos.
 
-As rotas usam `validateSchema` para validar `body`, `query` e `params`.
+### Endpoints usados
+- Auth/usuário: `POST /users`, `POST /session`, `GET /me`, `PUT /users/role`
+- Pedidos: `GET /orders?draft=false`, `GET /order/detail`, `PUT /order/finish`
+- Categorias: `GET /category`, `POST /category`, `PUT /category/update`,
+  `DELETE /category/remove`
+- Produtos: `GET /product`, `POST /product`, `PUT /product/update`,
+  `DELETE /product`
 
-Resposta padrão para validação:
+### Upload de imagem
+- Criação/edição de produtos usa `multipart/form-data`.
+- O frontend valida tamanho e tipo antes do envio.
 
-```json
-{
-  "error": "Erro de validação",
-  "details": [
-    { "field": "body.name", "message": "Mensagem de erro" }
-  ]
-}
+## 8) Validações e formulários
+
+- `src/lib/validations/auth.ts` (login/registro)
+- `src/lib/validations/category.ts` (categorias)
+- `src/lib/validations/product.ts` (produtos)
+  - tamanho máximo: **5MB**
+  - tipos aceitos: **jpg, jpeg, png**
+
+## 9) UI, feedback e animações
+
+- **Tailwind + shadcn/ui** para estrutura visual e componentes base.
+- **Sonner** para feedback de sucesso/erro.
+- **Framer Motion** para animações:
+  - Usuários: títulos e colunas da tabela entram em sequência.
+  - Categorias, Produtos e Pedidos: cards surgem da esquerda para a direita.
+  - Respeita `prefers-reduced-motion`.
+
+## 10) Fluxos principais
+
+### Login
+1. Usuário envia credenciais.
+2. `loginAction` autentica e salva cookie.
+3. Redireciona para `/dashboard`.
+
+### Categorias
+1. Criação via `createCategoryAction`.
+2. `revalidatePath("/dashboard/categories")`.
+3. `router.refresh()` atualiza a lista.
+
+### Produtos
+1. Formulário monta `FormData` com imagem.
+2. `createProductAction` ou `updateProductAction` envia.
+3. `revalidatePath("/dashboard/products")` atualiza listagem.
+
+### Pedidos
+1. Lista em `/dashboard` é carregada no client.
+2. Botão de refresh busca novamente.
+3. Modal carrega detalhe (`/order/detail`) e finaliza (`/order/finish`).
+
+## 11) Configuração e execução
+
+### Variáveis de ambiente
+Crie `.env.local`:
+
+```
+NEXT_PUBLIC_API_URL=http://localhost:3333
 ```
 
-## 6) Banco de dados (Prisma)
+Também é aceito `API_URL`.
 
-### Entidades principais
-- **User** (`users`)
-  - `id`, `name`, `email`, `password`, `role`, `createdAt`, `updatedAt`
-- **Category** (`categories`)
-  - `id`, `name`, `active`, `createdAt`, `updatedAt`
-- **Product** (`products`)
-  - `id`, `name`, `price`, `description`, `banner`, `disabled`, `categoryId`
-- **Order** (`orders`)
-  - `id`, `table`, `name`, `status`, `draft`, `createdAt`, `updatedAt`
-- **Item** (`items`)
-  - `id`, `amount`, `orderId`, `productId`
-
-### Relacionamentos
-```
-Category (1) --< Product (N) --< Item (N) >-- Order (1)
-```
-
-### Regras importantes
-- **Soft delete**:
-  - Category: `active = false`
-  - Product: `disabled = true`
-- **Cascata**:
-  - Category -> Product
-  - Product -> Item
-  - Order -> Item
-
-## 7) Upload de imagens
-
-- `multer` com `memoryStorage`.
-- Limite de arquivo: **4MB**.
-- Tipos permitidos: **jpg, jpeg, png**.
-- Upload no Cloudinary (`cloudinary.uploader.upload_stream`).
-
-## 8) Endpoints e contratos
-
-A lista completa e exemplos estão em:
-- `endpoints.md`
-- Swagger UI: `http://localhost:3333/docs`
-- OpenAPI JSON: `http://localhost:3333/docs.json`
-
-Resumo rápido:
-- **Users**: `/users`, `/session`, `/me`, `/users/role`
-- **Categories**: `/category`, `/category/remove`, `/category/update`
-- **Products**: `/product`, `/product/update`, `/category/product`
-- **Orders**: `/order`, `/orders`, `/order/add`, `/order/remove`, `/order/detail`, `/order/send`, `/order/finish`
-
-## 9) Erros e tratamento
-
-- Erros de domínio usam `AppError` (com `statusCode`).
-- Erros inesperados retornam 500:
-
-```json
-{ "status": "error", "message": "Internal server error" }
-```
-
-## 10) Configuração e execução
-
-### Instalar dependências
+### Comandos
 ```bash
 npm install
-```
-
-### Variáveis de ambiente (exemplo em `.example.env`)
-- `PORT`
-- `JWT_SECRETE`
-- `DATABASE_URL`
-- `CLOUDINARY_CLOUD_NAME`
-- `CLOUDINARY_API_KEY`
-- `CLOUDINARY_API_SECRET`
-- `CLOUDINARY_URL`
-- `MASTER_EMAIL`
-- `MASTER_PASSWORD`
-- `MASTER_NAME`
-
-### Rodar em desenvolvimento
-```bash
 npm run dev
-```
-
-### Seed do usuário MASTER (opcional)
-```bash
-npm run seed
-```
-
-Requer:
-- `MASTER_EMAIL`
-- `MASTER_PASSWORD`
-- `MASTER_NAME` (opcional)
-
-## 11) Testes
-
-### Rodar todos
-```bash
-npm test
-```
-
-### Watch
-```bash
-npm run test:watch
-```
-
-### Por domínio
-```bash
-npm run test:user
-npm run test:user-service
-npm run test:user-controller
-
-npm run test:category
-npm run test:category-service
-npm run test:category-controller
-
-npm run test:product
-npm run test:product-serve
-npm run test:product-controller
-
-npm run test:order
-npm run test:order-service
-npm run test:order-controller
+npm run build
+npm run start
+npm run lint
 ```
 
 ## 12) Observações importantes
 
-- **Preço** é armazenado como inteiro no banco.
-- **IDs** são UUIDs gerados pelo Prisma.
-- **JWT** usa `JWT_SECRETE` e expira em 30 dias.
-- **Categorias desativadas** não aparecem em listagens.
-- **Produtos desativados** são filtrados por padrão.
+- Preços são tratados em centavos e formatados com `formatPrice`.
+- Para dados sempre atuais, algumas requisições usam `cache: "no-store"`.
+- As animações podem ser desligadas automaticamente via
+  `prefers-reduced-motion`.
 
 ---
 

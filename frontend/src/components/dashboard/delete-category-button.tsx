@@ -17,6 +17,7 @@ import { Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface DeleteCategoryButtonProps {
   categoryId: string;
@@ -50,20 +51,28 @@ const DeleteCategoryButton = ({
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button
-          type="button"
-          size="icon"
-          variant="destructive"
-          aria-label={`Excluir categoria ${categoryName}`}
-        >
-          <Trash className="h-4 w-4" />
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              type="button"
+              size="icon"
+              variant="destructive"
+              aria-label={`Excluir categoria ${categoryName}`}
+            >
+              <Trash className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="top" sideOffset={6}>
+            Excluir categoria
+          </TooltipContent>
+        </Tooltip>
       </AlertDialogTrigger>
       <AlertDialogContent className="bg-app-card border-app-border text-white">
         <AlertDialogHeader>
           <AlertDialogTitle>Excluir categoria</AlertDialogTitle>
           <AlertDialogDescription>
             Tem certeza que deseja excluir a categoria &quot;{categoryName}
+            &quot;? Essa ação não pode ser desfeita.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { formatPrice } from "@/lib/format";
 import { OrderModal } from "./order-modal";
+import { motion, useReducedMotion } from "framer-motion";
 
 interface OrdersProps {
   token: string;
@@ -18,6 +19,24 @@ const Orders = ({ token }: OrdersProps) => {
   const [loading, setLoading] = useState(true);
   const [orders, setOrders] = useState<Order[]>([]);
   const [selectOrder, setSelectOrder] = useState<null | string>(null);
+  const shouldReduceMotion = useReducedMotion();
+
+  const containerInitial = shouldReduceMotion ? false : { opacity: 0 };
+  const containerAnimate = { opacity: 1 };
+  const containerTransition = shouldReduceMotion
+    ? { duration: 0 }
+    : { duration: 0.25, ease: [0.16, 1, 0.3, 1] };
+
+  const cardInitial = shouldReduceMotion ? false : { opacity: 0, x: -28 };
+  const cardAnimate = { opacity: 1, x: 0 };
+  const getCardTransition = (index: number) =>
+    shouldReduceMotion
+      ? { duration: 0 }
+      : {
+          duration: 0.45,
+          ease: [0.16, 1, 0.3, 1],
+          delay: 0.12 + index * 0.08,
+        };
 
   const fetchOrders = async () => {
     try {
@@ -56,7 +75,12 @@ const Orders = ({ token }: OrdersProps) => {
   };
 
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <motion.div
+      className="space-y-4 sm:space-y-6"
+      initial={containerInitial}
+      animate={containerAnimate}
+      transition={containerTransition}
+    >
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
           <h1 className="text-2xl font-bold text-white sm:text-3xl">Pedidos</h1>
@@ -85,57 +109,63 @@ const Orders = ({ token }: OrdersProps) => {
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {orders.map((order) => (
-            <Card
+          {orders.map((order, index) => (
+            <motion.div
               key={order.id}
-              className="bg-app-card border-app-border text-white"
+              initial={cardInitial}
+              animate={cardAnimate}
+              transition={getCardTransition(index)}
             >
-              <CardHeader>
-                <div className="flex items-center justify-between gap-2">
-                  <CardTitle className="text-lg font-bold text-white lg:text-xl">
-                    Mesa {order.table}
-                  </CardTitle>
-                  <Badge variant="secondary" className="text-xs select-none">
-                    Em produção
-                  </Badge>
-                </div>
-              </CardHeader>
+              <Card className="bg-app-card border-app-border flex h-full flex-col text-white">
+                <CardHeader>
+                  <div className="flex items-center justify-between gap-2">
+                    <CardTitle className="text-lg font-bold text-white lg:text-xl">
+                      Mesa {order.table}
+                    </CardTitle>
+                    <Badge variant="secondary" className="text-xs select-none">
+                      Em produção
+                    </Badge>
+                  </div>
+                </CardHeader>
 
-              <CardContent className="mt-auto space-y-3 sm:space-y-4">
-                <div>
-                  {order.items && order.items.length > 0 && (
-                    <div className="space-y-1">
-                      {order.items.slice(0, 2).map((item) => (
-                        <p
-                          key={item.id}
-                          className="truncate text-xs text-gray-300 sm:text-sm"
-                        >
-                          ＃ {item.amount}x {item.product.name}
-                        </p>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                <div className="border-app-border flex flex-col items-center justify-between gap-3 border-t pt-4 xl:flex-row">
-                  <div className="g2 self-start">
-                    <p className="text-sm text-gray-400 md:text-base">Total</p>
-                    <p className="text-brand-primary text-base font-bold">
-                      {formatPrice(calculateOrderTotal(order))}
-                    </p>
+                <CardContent className="mt-auto flex flex-1 flex-col gap-3 sm:gap-4">
+                  <div className="min-h-[2.75rem]">
+                    {order.items && order.items.length > 0 && (
+                      <div className="space-y-1">
+                        {order.items.slice(0, 2).map((item) => (
+                          <p
+                            key={item.id}
+                            className="truncate text-xs text-gray-300 sm:text-sm"
+                          >
+                            ＃ {item.amount}x {item.product.name}
+                          </p>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
-                  <Button
-                    className="bg-brand-primary hover:bg-brand-primary/90 w-full text-white xl:w-auto"
-                    size="sm"
-                    onClick={() => setSelectOrder(order.id)}
-                  >
-                    <EyeIcon className="h-5 w-5" />
-                    Detalhes
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+                  <div className="border-app-border mt-auto flex flex-col items-center justify-between gap-3 border-t pt-4 xl:flex-row">
+                    <div className="g2 self-start">
+                      <p className="text-sm text-gray-400 md:text-base">
+                        Total
+                      </p>
+                      <p className="text-brand-primary text-base font-bold">
+                        {formatPrice(calculateOrderTotal(order))}
+                      </p>
+                    </div>
+
+                    <Button
+                      className="bg-brand-primary hover:bg-brand-primary/90 w-full text-white xl:w-auto"
+                      size="sm"
+                      onClick={() => setSelectOrder(order.id)}
+                    >
+                      <EyeIcon className="h-5 w-5" />
+                      Detalhes
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
           ))}
         </div>
       )}
@@ -148,7 +178,7 @@ const Orders = ({ token }: OrdersProps) => {
         }}
         token={token}
       />
-    </div>
+    </motion.div>
   );
 };
 
