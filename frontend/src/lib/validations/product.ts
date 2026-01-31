@@ -39,4 +39,38 @@ export const productSchema = z.object({
     }, "Formato de imagem inválido"),
 });
 
+export const updateProductSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(1, "Nome do produto é obrigatório"),
+  price: z
+    .string()
+    .min(1, "Preço é obrigatório")
+    .refine((value) => {
+      const numbers = value.replace(/\D/g, "");
+      return Boolean(numbers) && Number(numbers) > 0;
+    }, "Preço deve ser maior que zero"),
+  description: z
+    .string()
+    .trim()
+    .min(1, "Descrição é obrigatória"),
+  imageFile: z
+    .custom<File | null>(
+      (file) =>
+        typeof File === "undefined" ||
+        file == null ||
+        file instanceof File,
+      "Formato de imagem inválido",
+    )
+    .refine((file) => {
+      if (!file || typeof File === "undefined") return true;
+      return file.size <= MAX_PRODUCT_IMAGE_SIZE;
+    }, "Imagem deve ter no máximo 5MB")
+    .refine((file) => {
+      if (!file || typeof File === "undefined") return true;
+      return PRODUCT_IMAGE_TYPES.includes(file.type);
+    }, "Formato de imagem inválido"),
+});
+
 export type ProductSchema = z.infer<typeof productSchema>;

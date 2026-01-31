@@ -208,7 +208,7 @@ export function ProductForm({ categories }: ProductFormProps) {
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="bg-app-card max-h-[90vh] overflow-y-auto p-6 text-white">
+      <DialogContent className="bg-app-card max-h-[90vh] overflow-x-hidden overflow-y-auto p-6 text-white">
         <DialogHeader>
           <DialogTitle>Criar novo produto</DialogTitle>
           <DialogDescription>Criando novo produto...</DialogDescription>
@@ -280,7 +280,7 @@ export function ProductForm({ categories }: ProductFormProps) {
               aria-describedby={
                 fieldErrors.description ? "product-description-error" : undefined
               }
-              className="border-app-border bg-app-background min-h-25 text-white"
+              className="border-app-border bg-app-background min-h-25 resize-none text-white"
             />
             {fieldErrors.description && (
               <p id="product-description-error" className="text-xs text-red-400">

@@ -1,15 +1,18 @@
 import { Card, CardTitle, CardHeader, CardContent } from "@/components/ui/card";
 import { apiClient } from "@/lib/api";
-import { getToken } from "@/lib/auth";
+import { getToken, getUser } from "@/lib/auth";
 import { Package } from "lucide-react";
 import { ProductForm } from "@/components/dashboard/product-form";
-import Image from "next/image";
 import { Categories, Product } from "@/lib/types";
-import { Button } from "@/components/ui/button";
 import DeleteButtonProduct from "@/components/dashboard/delete-button";
+import UpdateProductModal from "@/components/dashboard/update-product-modal";
+import ProductImageModal from "@/components/dashboard/product-image-modal";
 
 export default async function Products() {
   const token = await getToken();
+  const currentUser = await getUser();
+  const canManageProducts =
+    currentUser?.role === "ADMIN" || currentUser?.role === "MASTER";
 
   const categories = await apiClient<Categories[]>("/category", {
     token: token!,
@@ -46,15 +49,7 @@ export default async function Products() {
               key={product.id}
               className="bg-app-card border-app-border overflow-hidden text-white transition-shadow hover:shadow-md"
             >
-              <div className="relative h-48 w-full">
-                <Image
-                  src={product.banner}
-                  alt={product.name}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                />
-              </div>
+              <ProductImageModal src={product.banner} alt={product.name} />
               <CardHeader>
                 <CardTitle className="flex items-center justify-between gap-2 text-base md:text-lg">
                   <div className="flex flex-row items-center gap-2">
@@ -62,7 +57,12 @@ export default async function Products() {
                     <span>{product.name}</span>
                   </div>
 
-                  <DeleteButtonProduct productId={product.id} />
+                  <div className="flex items-center gap-2">
+                    {canManageProducts && (
+                      <UpdateProductModal product={product} />
+                    )}
+                    <DeleteButtonProduct productId={product.id} />
+                  </div>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
