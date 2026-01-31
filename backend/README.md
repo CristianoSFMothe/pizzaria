@@ -37,7 +37,7 @@ do ADMIN e possui rotas exclusivas (ex: atualizar role de usuario).
 
 - Recomendado: Node.js 20 LTS
 
-## Mapeamento das rotas
+## Mapeamento das rotas (resumo)
 
 | Metodo | Rota              | Descricao                         |
 | ------ | ----------------- | --------------------------------- |
@@ -63,6 +63,8 @@ do ADMIN e possui rotas exclusivas (ex: atualizar role de usuario).
 | GET    | /product          | Lista produtos                    |
 | DELETE | /product          | Desativa produto                  |
 | PUT    | /product/update   | Atualiza produto                  |
+| GET    | /docs             | Swagger UI                        |
+| GET    | /docs.json        | OpenAPI JSON                      |
 
 ## Comando para instalar versoes
 
@@ -107,10 +109,18 @@ Copie `.example.env` para `.env` e ajuste os valores.
 ```bash
 npm test
 npm run test:watch
-npm run test:users
+npm run test:user
+npm run test:user-service
+npm run test:user-controller
 npm run test:product
+npm run test:product-serve
+npm run test:product-controller
 npm run test:category
+npm run test:category-service
+npm run test:category-controller
 npm run test:order
+npm run test:order-service
+npm run test:order-controller
 ```
 
 ## Documentacao da API (Swagger)
@@ -118,6 +128,11 @@ npm run test:order
 - Swagger UI: http://localhost:3333/docs
 - OpenAPI JSON: http://localhost:3333/docs.json
 - Arquivo fonte: docs/openapi.yaml
+
+## Documentacao extra
+
+- endpoints: `endpoints.md`
+- documentacao detalhada: `Docs.md`
 
 ## Como clonar o projeto e colaborar
 
