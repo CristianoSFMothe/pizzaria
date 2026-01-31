@@ -1,4 +1,4 @@
-import UsersTable from "@/components/dashboard/users-table";
+import UsersPageContent from "@/components/dashboard/users-page-content";
 import { apiClient } from "@/lib/api";
 import { getToken, requiredMaster } from "@/lib/auth";
 import { User } from "@/lib/types";
@@ -16,18 +16,7 @@ const PageUsers = async () => {
     ? users.filter((user) => user.id !== currentUser.id)
     : users;
 
-  return (
-    <div className="space-y-4 sm:space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-white sm:text-3xl">Usuários</h1>
-        <p className="mt-2 text-sm text-gray-400 sm:text-base">
-          Gerencie os usuários cadastrados no sistema
-        </p>
-      </div>
-
-      <UsersTable initialUsers={filteredUsers} />
-    </div>
-  );
+  return <UsersPageContent users={filteredUsers} />;
 };
 
 export default PageUsers;
