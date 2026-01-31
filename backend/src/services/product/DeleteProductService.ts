@@ -23,7 +23,6 @@ class DeleteProductService {
 
       return { message: "Produto deletado com sucesso" };
     } catch (error) {
-      console.log(error);
       throw new AppError("Erro ao deletar produto", 500);
     }
   }

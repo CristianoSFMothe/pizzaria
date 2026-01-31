@@ -26,7 +26,6 @@ class RemoveItemOrderService {
 
       return { message: "Item removido com sucesso" };
     } catch (error) {
-      console.log(error);
       throw new AppError("Erro ao remover item do pedido", 500);
     }
   }

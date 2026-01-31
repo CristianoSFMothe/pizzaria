@@ -37,7 +37,6 @@ class FinishOrderService {
 
       return updateOrder;
     } catch (err) {
-      console.log(err);
       throw new AppError("Falha ao finalizar pedido", 500);
     }
   }

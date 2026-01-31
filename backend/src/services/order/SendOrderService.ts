@@ -39,7 +39,6 @@ class SendOrderService {
 
       return updateOrder;
     } catch (err) {
-      console.log(err);
       throw new AppError("Falha ao enviar pedido", 500);
     }
   }
