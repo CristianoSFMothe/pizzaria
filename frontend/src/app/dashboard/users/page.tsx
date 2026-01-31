@@ -1,11 +1,11 @@
 import UsersTable from "@/components/dashboard/users-table";
 import { apiClient } from "@/lib/api";
-import { getToken, getUser } from "@/lib/auth";
+import { getToken, requiredMaster } from "@/lib/auth";
 import { User } from "@/lib/types";
 
 const PageUsers = async () => {
+  const currentUser = await requiredMaster();
   const token = await getToken();
-  const currentUser = await getUser();
 
   const users = await apiClient<User[]>("/users", {
     token: token!,

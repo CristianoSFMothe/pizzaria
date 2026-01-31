@@ -20,6 +20,7 @@ interface UsersTableProps {
 
 const roleLabels: Record<User["role"], string> = {
   ADMIN: "Administrador",
+  MASTER: "Master",
   STAFF: "Atendente",
 };
 
@@ -28,23 +29,28 @@ const UsersTable = ({ initialUsers }: UsersTableProps) => {
   const [updatingUserId, setUpdatingUserId] = useState<string | null>(null);
 
   const handleUpdateRole = async (user: User) => {
-    if (user.role === "ADMIN") {
-      toast.info("Usuário já é ADMIN");
+    if (user.role === "MASTER") {
+      toast.info("Usuário MASTER não pode ser alterado");
       return;
     }
 
     setUpdatingUserId(user.id);
+    const toastId = toast.loading("Atualizando usuário...");
 
     const result = await updateUserRoleAction(user.id);
 
-    setUpdatingUserId(null);
-
     if (!result.success) {
-      toast.error(result.error || "Erro ao atualizar usuário");
+      toast.error(result.error || "Erro ao atualizar usuário", {
+        id: toastId,
+        duration: 3000,
+        onAutoClose: () => setUpdatingUserId(null),
+        onDismiss: () => setUpdatingUserId(null),
+      });
       return;
     }
 
-    const updatedRole = result.user?.role ?? "ADMIN";
+    const updatedRole =
+      result.user?.role ?? (user.role === "ADMIN" ? "STAFF" : "ADMIN");
 
     setUsers((prev) =>
       prev.map((item) =>
@@ -52,7 +58,14 @@ const UsersTable = ({ initialUsers }: UsersTableProps) => {
       ),
     );
 
-    toast.success("Usuário atualizado para ADMIN");
+    const roleLabel = roleLabels[updatedRole] ?? updatedRole;
+
+    toast.success(`Usuário atualizado para ${roleLabel}`, {
+      id: toastId,
+      duration: 3000,
+      onAutoClose: () => setUpdatingUserId(null),
+      onDismiss: () => setUpdatingUserId(null),
+    });
   };
 
   if (users.length === 0) {

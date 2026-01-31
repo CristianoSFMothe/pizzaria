@@ -26,7 +26,6 @@ class DeleteOrderService {
 
       return { message: "Pedido deletado com sucesso!" };
     } catch (err) {
-      console.log(err);
       throw new AppError("Falha ao deletar pedido", 500);
     }
   }

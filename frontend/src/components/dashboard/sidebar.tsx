@@ -6,20 +6,25 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "../ui/button";
 import { logoutAction } from "@/actions/auth";
+import { User } from "@/lib/types";
 
 interface SidebarProps {
   userName: string;
+  userRole: User["role"];
 }
 
 const menuItems = [
   { title: "Pedidos", href: "/dashboard", icon: ShoppingCart },
   { title: "Produtos", href: "/dashboard/products", icon: Package },
   { title: "Categorias", href: "/dashboard/categories", icon: Tags },
-  { title: "Usuários", href: "/dashboard/users", icon: Users },
+  { title: "Usuários", href: "/dashboard/users", icon: Users, onlyMaster: true },
 ];
 
-const Sidebar = ({ userName }: SidebarProps) => {
+const Sidebar = ({ userName, userRole }: SidebarProps) => {
   const pathname = usePathname();
+  const filteredMenuItems = menuItems.filter(
+    (menu) => !menu.onlyMaster || userRole === "MASTER",
+  );
 
   return (
     <aside className="border-app-border bg-app-background hidden h-screen w-64 flex-col border-r lg:flex">
@@ -32,7 +37,7 @@ const Sidebar = ({ userName }: SidebarProps) => {
       </div>
 
       <nav className="flex-1 space-y-4 p-4">
-        {menuItems.map((menu) => {
+        {filteredMenuItems.map((menu) => {
           const Icon = menu.icon;
 
           const isActive = pathname === menu.href;

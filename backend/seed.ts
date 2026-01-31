@@ -62,8 +62,6 @@ async function ensureMasterUser(): Promise<void> {
       createdAt: true,
     },
   });
-
-  console.log("Usuário master criado com sucesso:", user);
 }
 
 ensureMasterUser()

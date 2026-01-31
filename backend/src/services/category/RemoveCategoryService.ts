@@ -37,7 +37,6 @@ class RemoveCategoryService {
 
       return { message: "Categoria desativada com sucesso" };
     } catch (error) {
-      console.log(error);
       throw new AppError("Erro ao remover categoria", 500);
     }
   }

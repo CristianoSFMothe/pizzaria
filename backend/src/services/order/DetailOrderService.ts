@@ -45,7 +45,6 @@ class DetailOrderService {
 
       return order;
     } catch (err) {
-      console.log(err);
       throw new AppError("Falha ao buscar detalhes da ordem", 500);
     }
   }

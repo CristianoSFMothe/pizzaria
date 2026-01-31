@@ -72,7 +72,6 @@ class UpdateProductService {
 
         bannerUrl = result.secure_url;
       } catch (error) {
-        console.log("Error: ", error);
         throw new AppError("Erro ao enviar imagem do produto", 500);
       }
     }

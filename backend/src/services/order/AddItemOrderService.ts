@@ -60,7 +60,7 @@ class AddItemOrderService {
       if (err instanceof AppError) {
         throw err;
       }
-      console.log(err);
+
       throw new AppError("Falha ao adicionar item no pedido", 500);
     }
   }
