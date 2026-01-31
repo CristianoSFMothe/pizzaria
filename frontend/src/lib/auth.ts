@@ -50,7 +50,21 @@ export const requiredAdmin = async (): Promise<User> => {
     redirect("/login");
   }
 
-  if (user?.role !== "ADMIN") {
+  if (user?.role !== "ADMIN" && user?.role !== "MASTER") {
+    redirect("/access-denied");
+  }
+
+  return user;
+};
+
+export const requiredMaster = async (): Promise<User> => {
+  const user = await getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  if (user?.role !== "MASTER") {
     redirect("/access-denied");
   }
 
