@@ -14,8 +14,15 @@ import { Pencil, Upload } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import Image from "next/image";
-import { Product } from "@/lib/types";
+import { Categories, Product } from "@/lib/types";
 import { updateProductAction } from "@/actions/products";
 import { useRouter } from "next/navigation";
 import {
@@ -28,6 +35,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 
 interface UpdateProductModalProps {
   product: Product;
+  categories: Categories[];
 }
 
 const formatCentsToBrl = (priceInCents: number) => {
@@ -61,7 +69,28 @@ const convertBRLToCents = (value: string): number => {
   return Math.round(reais * 100);
 };
 
-const UpdateProductModal = ({ product }: UpdateProductModalProps) => {
+const resolveCategoryId = (
+  product: Product,
+  categories: Categories[],
+): string | undefined => {
+  const directId =
+    product.category?.id ?? product.categoryId ?? product.category_id;
+
+  if (directId) return String(directId);
+
+  const categoryName = product.category?.name;
+
+  if (!categoryName) return undefined;
+
+  const matched = categories.find((category) => category.name === categoryName);
+
+  return matched ? String(matched.id) : undefined;
+};
+
+const UpdateProductModal = ({
+  product,
+  categories,
+}: UpdateProductModalProps) => {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [open, setOpen] = useState(false);
@@ -70,6 +99,9 @@ const UpdateProductModal = ({ product }: UpdateProductModalProps) => {
   const [priceValue, setPriceValue] = useState(
     formatCentsToBrl(product.price),
   );
+  const [selectedCategory, setSelectedCategory] = useState<
+    string | undefined
+  >(resolveCategoryId(product, categories));
   const [imagePreview, setImagePreview] = useState<string | null>(
     product.banner,
   );
@@ -79,6 +111,7 @@ const UpdateProductModal = ({ product }: UpdateProductModalProps) => {
     name?: string;
     price?: string;
     description?: string;
+    categoryId?: string;
     imageFile?: string;
   }>({});
 
@@ -86,6 +119,7 @@ const UpdateProductModal = ({ product }: UpdateProductModalProps) => {
     setName(product.name);
     setDescription(product.description);
     setPriceValue(formatCentsToBrl(product.price));
+    setSelectedCategory(resolveCategoryId(product, categories));
     setImagePreview(product.banner);
     setImageFile(null);
     setFieldErrors({});
@@ -101,6 +135,11 @@ const UpdateProductModal = ({ product }: UpdateProductModalProps) => {
     }
   };
 
+  React.useEffect(() => {
+    if (!open) return;
+    setSelectedCategory(resolveCategoryId(product, categories));
+  }, [open, product, categories]);
+
   const handleUpdateProduct = async (
     event: React.FormEvent<HTMLFormElement>,
   ) => {
@@ -110,17 +149,20 @@ const UpdateProductModal = ({ product }: UpdateProductModalProps) => {
       name: name.trim(),
       price: priceValue.trim(),
       description: description.trim(),
+      categoryId: effectiveCategoryId ?? "",
       imageFile,
     };
 
     const result = updateProductSchema.safeParse(values);
 
     if (!result.success) {
-      const errors = result.error.flatten().fieldErrors;
+      const errors = result.error.flatten()
+        .fieldErrors as Partial<Record<keyof typeof values, string[]>>;
       setFieldErrors({
         name: errors.name?.[0],
         price: errors.price?.[0],
         description: errors.description?.[0],
+        categoryId: errors.categoryId?.[0],
         imageFile: errors.imageFile?.[0],
       });
       return;
@@ -135,6 +177,7 @@ const UpdateProductModal = ({ product }: UpdateProductModalProps) => {
     productFormData.append("name", values.name);
     productFormData.append("description", values.description);
     productFormData.append("price", priceInCents.toString());
+    productFormData.append("categoryId", values.categoryId);
 
     if (imageFile) {
       productFormData.append("file", imageFile);
@@ -161,6 +204,23 @@ const UpdateProductModal = ({ product }: UpdateProductModalProps) => {
       setFieldErrors((prev) => ({ ...prev, price: undefined }));
     }
   };
+
+  const handleCategoryChange = (value: string) => {
+    setSelectedCategory(value);
+    if (fieldErrors.categoryId) {
+      setFieldErrors((prev) => ({ ...prev, categoryId: undefined }));
+    }
+  };
+
+  const resolvedCategoryId = resolveCategoryId(product, categories);
+  const resolvedCategoryName =
+    product.category?.name ??
+    categories.find((category) => category.id === resolvedCategoryId)?.name ??
+    (resolvedCategoryId ? "Categoria atual" : undefined);
+  const hasCategoryOption =
+    Boolean(resolvedCategoryId) &&
+    categories.some((category) => category.id === resolvedCategoryId);
+  const effectiveCategoryId = selectedCategory ?? resolvedCategoryId;
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -209,9 +269,9 @@ const UpdateProductModal = ({ product }: UpdateProductModalProps) => {
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <Tooltip>
-          <TooltipTrigger asChild>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <DialogTrigger asChild>
             <Button
               type="button"
               size="icon"
@@ -220,12 +280,12 @@ const UpdateProductModal = ({ product }: UpdateProductModalProps) => {
             >
               <Pencil className="h-4 w-4" />
             </Button>
-          </TooltipTrigger>
-          <TooltipContent side="top" sideOffset={6}>
-            Editar produto
-          </TooltipContent>
-        </Tooltip>
-      </DialogTrigger>
+          </DialogTrigger>
+        </TooltipTrigger>
+        <TooltipContent side="top" sideOffset={6}>
+          Editar produto
+        </TooltipContent>
+      </Tooltip>
 
       <DialogContent className="bg-app-card max-h-[90vh] overflow-x-hidden overflow-y-auto p-6 text-white">
         <DialogHeader>
@@ -336,16 +396,55 @@ const UpdateProductModal = ({ product }: UpdateProductModalProps) => {
             )}
           </div>
 
-          {product.category?.name && (
-            <div>
-              <Label className="mb-2">Categoria</Label>
-              <Input
-                value={product.category.name}
-                disabled
-                className="border-app-border bg-app-background text-white opacity-80"
-              />
-            </div>
-          )}
+          <div>
+            <Label className="mb-2">Categoria</Label>
+            <Select
+              value={effectiveCategoryId}
+              onValueChange={handleCategoryChange}
+            >
+              <SelectTrigger
+                className="border-app-border bg-app-background text-white"
+                aria-invalid={Boolean(fieldErrors.categoryId)}
+                aria-describedby={
+                  fieldErrors.categoryId
+                    ? `product-category-error-${product.id}`
+                    : undefined
+                }
+              >
+                <SelectValue placeholder="Selecione uma categoria" />
+              </SelectTrigger>
+              <SelectContent className="bg-app-card border-app-border">
+                {resolvedCategoryId &&
+                  !hasCategoryOption &&
+                  resolvedCategoryName && (
+                    <SelectItem
+                      value={resolvedCategoryId}
+                      disabled
+                      className="text-gray-400"
+                    >
+                      {resolvedCategoryName} (inativa)
+                    </SelectItem>
+                  )}
+                {categories.map((category) => (
+                  <SelectItem
+                    key={category.id}
+                    value={category.id}
+                    className="cursor-pointer text-white hover:bg-transparent"
+                  >
+                    {category.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {fieldErrors.categoryId && (
+              <p
+                id={`product-category-error-${product.id}`}
+                className="text-xs text-red-400"
+              >
+                {fieldErrors.categoryId}
+              </p>
+            )}
+          </div>
 
           <div className="space-y-2">
             <Label htmlFor={`file-${product.id}`} className="mb-2">

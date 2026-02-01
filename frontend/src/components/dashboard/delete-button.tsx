@@ -17,7 +17,11 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface DeleteButtonProductProps {
   productId: string;
@@ -45,18 +49,18 @@ const DeleteButtonProduct = ({ productId }: DeleteButtonProductProps) => {
 
   return (
     <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <Tooltip>
-          <TooltipTrigger asChild>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <AlertDialogTrigger asChild>
             <Button type="button" variant="destructive" size="icon">
               <Trash className="h-5 w-5" />
             </Button>
-          </TooltipTrigger>
-          <TooltipContent side="top" sideOffset={6}>
-            Excluir produto
-          </TooltipContent>
-        </Tooltip>
-      </AlertDialogTrigger>
+          </AlertDialogTrigger>
+        </TooltipTrigger>
+        <TooltipContent side="top" sideOffset={6}>
+          Excluir produto
+        </TooltipContent>
+      </Tooltip>
       <AlertDialogContent className="bg-app-card border-app-border text-white">
         <AlertDialogHeader>
           <AlertDialogTitle>Excluir produto</AlertDialogTitle>
@@ -65,7 +69,9 @@ const DeleteButtonProduct = ({ productId }: DeleteButtonProductProps) => {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+          <AlertDialogCancel className="bg-transparent" disabled={isDeleting}>
+            Cancelar
+          </AlertDialogCancel>
           <AlertDialogAction
             onClick={handleDeleteProduct}
             disabled={isDeleting}

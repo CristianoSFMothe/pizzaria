@@ -50,9 +50,9 @@ const DeleteCategoryButton = ({
 
   return (
     <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <Tooltip>
-          <TooltipTrigger asChild>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <AlertDialogTrigger asChild>
             <Button
               type="button"
               size="icon"
@@ -61,12 +61,12 @@ const DeleteCategoryButton = ({
             >
               <Trash className="h-4 w-4" />
             </Button>
-          </TooltipTrigger>
-          <TooltipContent side="top" sideOffset={6}>
-            Excluir categoria
-          </TooltipContent>
-        </Tooltip>
-      </AlertDialogTrigger>
+          </AlertDialogTrigger>
+        </TooltipTrigger>
+        <TooltipContent side="top" sideOffset={6}>
+          Excluir categoria
+        </TooltipContent>
+      </Tooltip>
       <AlertDialogContent className="bg-app-card border-app-border text-white">
         <AlertDialogHeader>
           <AlertDialogTitle>Excluir categoria</AlertDialogTitle>

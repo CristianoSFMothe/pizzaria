@@ -79,9 +79,9 @@ const UpdateCategoryModal = ({ category }: UpdateCategoryModalProps) => {
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <Tooltip>
-          <TooltipTrigger asChild>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <DialogTrigger asChild>
             <Button
               type="button"
               size="icon"
@@ -90,12 +90,12 @@ const UpdateCategoryModal = ({ category }: UpdateCategoryModalProps) => {
             >
               <Pencil className="h-4 w-4" />
             </Button>
-          </TooltipTrigger>
-          <TooltipContent side="top" sideOffset={6}>
-            Editar categoria
-          </TooltipContent>
-        </Tooltip>
-      </DialogTrigger>
+          </DialogTrigger>
+        </TooltipTrigger>
+        <TooltipContent side="top" sideOffset={6}>
+          Editar categoria
+        </TooltipContent>
+      </Tooltip>
 
       <DialogContent className="bg-app-card p-6 text-white">
         <DialogHeader>

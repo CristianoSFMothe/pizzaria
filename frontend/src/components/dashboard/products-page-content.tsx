@@ -85,7 +85,10 @@ const ProductsPageContent = ({
 
                     <div className="flex items-center gap-2">
                       {canManageProducts && (
-                        <UpdateProductModal product={product} />
+                        <UpdateProductModal
+                          product={product}
+                          categories={categories}
+                        />
                       )}
                       <DeleteButtonProduct productId={product.id} />
                     </div>

@@ -55,6 +55,7 @@ export const updateProductSchema = z.object({
     .string()
     .trim()
     .min(1, "Descrição é obrigatória"),
+  categoryId: z.string().min(1, "Categoria é obrigatória"),
   imageFile: z
     .custom<File | null>(
       (file) =>

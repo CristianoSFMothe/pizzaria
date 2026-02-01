@@ -30,6 +30,7 @@ export interface Product {
   banner: string;
   disabled: boolean;
   category_id: string;
+  categoryId?: string;
   createdAt: string;
   updatedAt?: string;
   category?: {
