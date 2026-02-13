@@ -4,6 +4,16 @@ const Dashboard = () => {
   return (
     <View>
       <Text>Pagina Dashboard</Text>
+      <Text>Pagina Dashboard</Text>
+      <Text>Pagina Dashboard</Text>
+      <Text>Pagina Dashboard</Text>
+      <Text>Pagina Dashboard</Text>
+      <Text>Pagina Dashboard</Text>
+      <Text>Pagina Dashboard</Text>
+      <Text>Pagina Dashboard</Text>
+      <Text>Pagina Dashboard</Text>
+      <Text>Pagina Dashboard</Text>
+      <Text>Pagina Dashboard</Text>
     </View>
   );
 };
