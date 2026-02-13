@@ -5,7 +5,6 @@ import { API_CONFIG } from "../config/api.config";
 const api = axios.create({
   baseURL: API_CONFIG.BASE_URL,
   timeout: API_CONFIG.TIMEOUT,
-
   headers: {
     "Content-Type": "application/json",
   },
@@ -28,7 +27,6 @@ api.interceptors.request.use(
 
 api.interceptors.response.use(
   (response) => response,
-
   async (error) => {
     if (error.response?.status === 401) {
       await AsyncStorage.removeItem("@token:pizzaria");

@@ -2,6 +2,7 @@ import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
 import { colors, fontSize, spacing } from "@/constants/theme";
 import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
   Alert,
@@ -17,6 +18,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const { signIn } = useAuth();
+  const router = useRouter();
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
@@ -28,6 +30,8 @@ const Login = () => {
       setLoading(true);
 
       await signIn(email, password);
+
+      router.replace("/(authenticated)/dashboard");
     } catch (error) {
       Alert.alert("Erro", "Não foi possível realizar o login");
     } finally {
