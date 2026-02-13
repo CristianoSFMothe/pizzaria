@@ -1,14 +1,22 @@
-import { colors } from "@/constants/theme";
-import { Stack } from "expo-router";
-import { StatusBar } from "expo-status-bar";
+import { useAuth } from "@/context/AuthContext";
+import { Stack, useRouter } from "expo-router";
+import { useEffect } from "react";
 
 export default function AuthenticatedLayout() {
+  const { loading, signed } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && !signed) {
+      router.replace("/login");
+    }
+  }, [loading, signed]);
+
+  if (loading || !signed) return null;
+
   return (
-    <>
-      <StatusBar style="light" backgroundColor={colors.background} />
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="dashboard" />
-      </Stack>
-    </>
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="dashboard" />
+    </Stack>
   );
 }
