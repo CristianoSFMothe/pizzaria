@@ -2,7 +2,7 @@ import { colors } from "@/constants/theme";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 
-export const AuthenticatedLayout = () => {
+export default function AuthenticatedLayout() {
   return (
     <>
       <StatusBar style="light" backgroundColor={colors.background} />
@@ -11,4 +11,4 @@ export const AuthenticatedLayout = () => {
       </Stack>
     </>
   );
-};
+}
